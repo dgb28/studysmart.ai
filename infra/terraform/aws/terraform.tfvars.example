@@ -1,0 +1,10 @@
+# terraform.tfvars.example — copy to terraform.tfvars and fill in values
+project_name      = "hackathon"
+environment       = "development"
+aws_region        = "us-east-1"
+eks_node_type     = "t3.medium"
+eks_desired_nodes = 2
+rds_instance_class = "db.t3.micro"
+db_name           = "hackathon"
+db_username       = "hackathon_admin"
+db_password       = "CHANGE_ME_STRONG_PASSWORD"

@@ -1,0 +1,6 @@
+gcp_project_id  = "your-gcp-project-id"
+environment     = "development"
+gcp_region      = "us-central1"
+gke_machine_type = "e2-standard-2"
+cloudsql_tier   = "db-f1-micro"
+agents_image    = "gcr.io/your-gcp-project-id/hackathon-agents:latest"

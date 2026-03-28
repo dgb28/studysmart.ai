@@ -1,0 +1,39 @@
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/sources.py", line 552, in __call__
+    field_value = self.prepare_field_value(field_name, field, field_value, value_is_complex)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/sources.py", line 764, in prepare_field_value
+    raise e
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/sources.py", line 761, in prepare_field_value
+    value = self.decode_complex_value(field_name, field, value)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/sources.py", line 312, in decode_complex_value
+    return json.loads(value)
+           ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/app/test_settings.py", line 3, in <module>
+    from app.core.config import settings
+  File "/app/app/core/config.py", line 55, in <module>
+    settings = Settings()
+               ^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/main.py", line 168, in __init__
+    **__pydantic_self__._settings_build_values(
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/main.py", line 386, in _settings_build_values
+    source_state = source()
+                   ^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pydantic_settings/sources.py", line 554, in __call__
+    raise SettingsError(
+pydantic_settings.sources.SettingsError: error parsing value for field "CORS_ORIGINS" from source "EnvSettingsSource"
