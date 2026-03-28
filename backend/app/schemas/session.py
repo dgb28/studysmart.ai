@@ -5,7 +5,6 @@ from typing import List, Optional
 
 class StudySessionCreate(BaseModel):
     module_id: uuid.UUID
-    user_id: uuid.UUID # Typically extracted from token, but added here for the hackathon simplicity
 
 class StudySessionRead(BaseModel):
     id: uuid.UUID

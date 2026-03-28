@@ -45,6 +45,7 @@ opentelemetry-instrumentation-fastapi==0.49b0
 langchain
 langchain-openai
 langchain-core
+openai>=1.0.0
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 pytest==8.3.3

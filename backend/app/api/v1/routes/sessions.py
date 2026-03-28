@@ -5,19 +5,27 @@ from datetime import datetime, timezone
 import uuid
 
 from app.db.session import get_db
+from app.api.deps import get_current_user
+from app.models.user import User
 from app.models.study_session import StudySession
 from app.models.topic_progress import TopicProgress
 from app.schemas.session import StudySessionCreate, StudySessionRead, CompleteTopicRequest
+from app.services.activity import record_activity_day
 
 router = APIRouter()
 
+
 @router.post("/start", response_model=StudySessionRead)
-async def start_session(request: StudySessionCreate, db: AsyncSession = Depends(get_db)):
+async def start_session(
+    request: StudySessionCreate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     # Check if an active session exists
     active_result = await db.execute(
         select(StudySession).where(
-            StudySession.user_id == request.user_id,
-            StudySession.is_active == True
+            StudySession.user_id == user.id,
+            StudySession.is_active == True,
         )
     )
     active_session = active_result.scalars().first()
@@ -29,7 +37,7 @@ async def start_session(request: StudySessionCreate, db: AsyncSession = Depends(
 
     # Create new session
     session = StudySession(
-        user_id=request.user_id,
+        user_id=user.id,
         module_id=request.module_id,
         started_at=datetime.now(timezone.utc),
         is_active=True,
@@ -42,10 +50,15 @@ async def start_session(request: StudySessionCreate, db: AsyncSession = Depends(
 
 
 @router.post("/{session_id}/complete-topic", response_model=StudySessionRead)
-async def complete_topic(session_id: uuid.UUID, request: CompleteTopicRequest, db: AsyncSession = Depends(get_db)):
+async def complete_topic(
+    session_id: uuid.UUID,
+    request: CompleteTopicRequest,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     result = await db.execute(select(StudySession).where(StudySession.id == session_id))
     session = result.scalars().first()
-    if not session:
+    if not session or session.user_id != user.id:
         raise HTTPException(status_code=404, detail="Session not found")
     
     if not session.is_active:
@@ -67,16 +80,21 @@ async def complete_topic(session_id: uuid.UUID, request: CompleteTopicRequest, d
 
     # Note: Study Pulse Evaluation should ideally happen before this is committed if it was the last topic.
     
+    await record_activity_day(db, session.user_id)
     await db.commit()
     await db.refresh(session)
     return session
 
 
 @router.post("/{session_id}/end", response_model=StudySessionRead)
-async def end_session(session_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def end_session(
+    session_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     result = await db.execute(select(StudySession).where(StudySession.id == session_id))
     session = result.scalars().first()
-    if not session:
+    if not session or session.user_id != user.id:
         raise HTTPException(status_code=404, detail="Session not found")
         
     if session.is_active:

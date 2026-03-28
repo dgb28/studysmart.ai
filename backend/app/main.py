@@ -10,12 +10,14 @@ from app.api.v1.router import api_router
 from app.db.session import engine
 from app.db.base import Base
 import app.models  # noqa: Load models for metadata sync
+from app.db.base import Base
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
-    # Startup
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     print(f"🚀 Starting {settings.APP_NAME} API [{settings.APP_ENV}]")
     yield
     # Shutdown

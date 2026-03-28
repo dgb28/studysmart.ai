@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from app.core.config import settings
-from app.db.base import Base # Needed so tables are created if not exist
+from app.core.security import hash_password
+from app.db.base import Base  # noqa: F401
+import app.models  # noqa: F401 — register all models on Base.metadata
 from app.models.subject import Subject
 from app.models.module import Module
 from app.models.topic import Topic
@@ -26,16 +28,21 @@ async def seed_data():
     AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
     async with AsyncSessionLocal() as db:
-        print("Seeding default user for testing...")
+        print("Seeding default user for testing (password: testpass123)...")
         mock_user_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
-        user = User(
-            id=mock_user_id,
-            email="test@studypulse.com",
-            hashed_password="hashed_mock",
-            full_name="Test Student",
-            is_active=True
-        )
-        db.add(user)
+        from sqlalchemy.future import select
+
+        existing = await db.execute(select(User).where(User.id == mock_user_id))
+        if not existing.scalars().first():
+            user = User(
+                id=mock_user_id,
+                email="test@studypulse.com",
+                hashed_password=hash_password("testpass123"),
+                full_name="Test Student",
+                is_active=True,
+            )
+            db.add(user)
+            await db.flush()
 
         print("Seeding subjects...")
         sql_subject = Subject(
@@ -52,9 +59,15 @@ async def seed_data():
             color="bg-purple-600",
             description="Master common data structures and algorithms."
         )
+        sub_check = await db.execute(select(Subject).where(Subject.name == "SQL Mastery"))
+        if sub_check.scalars().first():
+            print("Catalog subjects already present, skipping subject/module/topic seed.")
+            await db.commit()
+            return
+
         db.add_all([sql_subject, dsa_subject])
-        await db.flush() # get IDs
-        
+        await db.flush()  # get IDs
+
         print("Seeding modules...")
         sql_mod1 = Module(id=uuid.uuid4(), subject_id=sql_subject.id, title="Basics of SELECT", description="Learn how to query data.", order=1)
         sql_mod2 = Module(id=uuid.uuid4(), subject_id=sql_subject.id, title="Joins & Relations", description="Connecting tables.", order=2)

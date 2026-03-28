@@ -14,3 +14,6 @@ class Topic(BaseModel):
     order = Column(Integer, default=0, nullable=False)
 
     module = relationship("Module", back_populates="topics")
+    quiz = relationship("TopicQuiz", back_populates="topic", uselist=False, cascade="all, delete-orphan")
+    quiz_attempts = relationship("QuizAttempt", back_populates="topic", cascade="all, delete-orphan")
+    user_states = relationship("UserTopicState", back_populates="topic", cascade="all, delete-orphan")
