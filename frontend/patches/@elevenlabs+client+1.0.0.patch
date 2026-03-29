@@ -1,0 +1,60 @@
+diff --git a/node_modules/@elevenlabs/client/dist/BaseConversation.js b/node_modules/@elevenlabs/client/dist/BaseConversation.js
+index 2280124..be6e3bf 100644
+--- a/node_modules/@elevenlabs/client/dist/BaseConversation.js
++++ b/node_modules/@elevenlabs/client/dist/BaseConversation.js
+@@ -238,8 +238,23 @@ export class BaseConversation {
+         }
+     }
+     handleErrorEvent(event) {
+-        const errorType = event.error_event.error_type;
+-        const message = event.error_event.message || event.error_event.reason || "Unknown error";
++        const topLevelMessage = typeof event.message === "string" ? event.message : undefined;
++        const errorEvent = event.error_event;
++        if (!errorEvent) {
++            const fallback = topLevelMessage || "Unknown error";
++            this.onError(`Server error: ${fallback}`, {
++                errorType: undefined,
++                code: undefined,
++                debugMessage: undefined,
++                details: undefined,
++            });
++            return;
++        }
++        const errorType = errorEvent.error_type;
++        const message = topLevelMessage ||
++            errorEvent.message ||
++            errorEvent.reason ||
++            "Unknown error";
+         if (errorType === "max_duration_exceeded") {
+             this.endSessionWithDetails({
+                 reason: "error",
+@@ -250,9 +265,9 @@ export class BaseConversation {
+         }
+         this.onError(`Server error: ${message}`, {
+             errorType,
+-            code: event.error_event.code,
+-            debugMessage: event.error_event.debug_message,
+-            details: event.error_event.details,
++            code: errorEvent.code,
++            debugMessage: errorEvent.debug_message,
++            details: errorEvent.details,
+         });
+     }
+     onMessage = async (parsedEvent) => {
+diff --git a/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js b/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
+index 860d226..95cc03e 100644
+--- a/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
++++ b/node_modules/@elevenlabs/client/dist/utils/WebRTCConnection.js
+@@ -143,7 +143,11 @@ export class WebRTCConnection extends BaseConnection {
+                 if (config.environment) {
+                     url += `&environment=${encodeURIComponent(config.environment)}`;
+                 }
+-                const response = await fetch(url);
++                const headers = {};
++                if (config.authorization) {
++                    headers["xi-api-key"] = config.authorization;
++                }
++                const response = await fetch(url, { headers });
+                 if (!response.ok) {
+                     throw new Error(`ElevenLabs API returned ${response.status} ${response.statusText}`);
+                 }
