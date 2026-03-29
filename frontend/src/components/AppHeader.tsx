@@ -24,6 +24,7 @@ export default function AppHeader() {
     { label: "Paths", href: "/dashboard" },
     { label: "Goals", href: "/dashboard/goals" },
     { label: "Analysis", href: "/dashboard/analytics" },
+    { label: "Rooms", href: "/rooms" },
     { label: "Home", href: "/home" },
   ];
 

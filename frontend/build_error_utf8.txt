@@ -1,0 +1,55 @@
+﻿  Γû▓ Next.js 14.2.16
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Users
+\dgbha\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: (Failed to com  
+  pile.:String) [], RemoteExc   
+ eption
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+
+./src/components/FloatingVideoOv
+erlay.tsx:34:17
+Type error: Type '{ controlBar: 
+boolean; className: string; }' 
+is not assignable to type 
+'IntrinsicAttributes & 
+VideoConferenceProps'.
+  Property 'controlBar' does 
+not exist on type 
+'IntrinsicAttributes & 
+VideoConferenceProps'.
+
+[0m [90m 32 |[39m           
+[33m<[39m[33mdiv[39m classNa
+me[33m=[39m[32m"relative 
+h-full 
+w-full"[39m[33m>[39m[0m
+[0m [90m 33 |[39m            
+ [33m<[39m[33mVideoConference
+[39m [0m
+[0m[31m[1m>[22m[39m[90m 
+34 |[39m                 contro
+lBar[33m=[39m{[36mfalse[39m}
+ [0m
+[0m [90m    |[39m            
+     [31m[1m^[22m[39m[0m
+[0m [90m 35 |[39m            
+     className[33m=[39m[32m"h
+-full w-full scale-110"[39m 
+[0m
+[0m [90m 36 |[39m            
+ [33m/[39m[33m>[39m[0m
+[0m [90m 37 |[39m            
+ [0m

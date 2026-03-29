@@ -79,11 +79,16 @@ GOOGLE_API_KEY=AIza...         # Get from console.cloud.google.com
 
 # Needed for High-Quality Voice Coaching interactions
 ELEVENLABS_API_KEY=...         # Get from elevenlabs.io (optional, fallback to browser TTS)
+
+# Needed for Live Study Rooms (WebRTC)
+LIVEKIT_API_KEY=devkey         # Get from LiveKit Cloud or local setup
+LIVEKIT_API_SECRET=secret
 ```
 
 ### Frontend Variables (`frontend/.env.local`)
 - `NEXT_PUBLIC_API_URL`: `http://localhost:8000` (for browser-side calls)
 - `NEXT_PUBLIC_ELEVENLABS_AGENT_ID`: Your ElevenLabs Conversational AI Agent ID.
+- `NEXT_PUBLIC_LIVEKIT_URL`: `ws://localhost:7880` (or cloud URL)
 
 ---
 

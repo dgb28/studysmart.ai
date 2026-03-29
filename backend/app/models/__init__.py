@@ -9,6 +9,7 @@ from app.models.module import Module
 from app.models.topic import Topic
 from app.models.study_session import StudySession
 from app.models.topic_progress import TopicProgress
+from app.models.study_room import StudyRoom
 from app.models.daily_goal import DailyGoal
 from app.models.timer_segment import TimerSegment
 from app.models.daily_activity import DailyActivity
@@ -24,6 +25,7 @@ __all__ = [
     "Topic",
     "StudySession",
     "TopicProgress",
+    "StudyRoom",
     "DailyGoal",
     "TimerSegment",
     "DailyActivity",

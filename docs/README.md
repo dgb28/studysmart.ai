@@ -16,3 +16,8 @@
 
 > Start with [ENV_SETUP.md](ENV_SETUP.md) if you are a new human developer.  
 > Start with [AGENT_SETUP.md](../AGENT_SETUP.md) and [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md) if you are an AI agent.
+
+---
+### 🌟 Core Features Implemented:
+- **Interactive AI Coaching**: ElevenLabs conversational agents.
+- **Live Study Rooms**: WebRTC (LiveKit) based virtual lounges with smart floating PiP (Picture-in-Picture) video.

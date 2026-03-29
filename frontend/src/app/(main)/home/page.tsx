@@ -19,7 +19,15 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const registerGreetingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Use a ref so we only run this check once, regardless of router identity changes.
+  // In Next.js App Router, `router` is NOT a stable value — adding it as a
+  // useEffect dependency causes an infinite re-fetch loop when /auth/me returns 401.
+  const didCheck = useRef(false);
+
   useEffect(() => {
+    if (didCheck.current) return;
+    didCheck.current = true;
+
     if (!getToken()) {
       router.replace("/login");
       return;
@@ -30,7 +38,8 @@ export default function HomePage() {
         if (isUnauthorized(e)) router.replace("/login");
         else setLoadErr("Could not load profile. Check API is reachable.");
       });
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
