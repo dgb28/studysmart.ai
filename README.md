@@ -9,6 +9,14 @@ es, RAG support, and multi-cloud scalability (AWS + GCP) baked in from day one.
 
 ---
 
+## 💡 Project Idea
+
+StudySmart.ai was built to solve the barrier of inequitable access to quality 1-on-1 tutoring. Traditional classrooms provide a "one-size-fits-all" pace and offer zero insight into *how* effectively a student's time is being spent, leading to distraction and burnout. 
+
+Our concept is to democratize access to elite tutoring through a context-aware learning ecosystem. StudySmart acts as a highly personalized, infinitely patient tutor that corrects misunderstandings in real-time, strictly locked to the student's current learning module to prevent AI hallucinations. Concurrently, it empowers individuals by tracking granular interaction metrics—such as focus time, keystrokes, and tab switches—to help students map out their study footprint, build healthier study habits, and reduce cognitive overload.
+
+---
+
 ## 🗂️ Project Structure
 
 ```
