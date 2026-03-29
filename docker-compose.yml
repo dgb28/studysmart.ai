@@ -60,25 +60,19 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000
+        - NEXT_PUBLIC_LIVEKIT_URL=${NEXT_PUBLIC_LIVEKIT_URL:-ws://localhost:7880}
     container_name: hackathon-frontend
     env_file: .env
     environment:
-      - WATCHPACK_POLLING=true
-      # Browser runs on host — must use localhost, not backend:8000
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_LIVEKIT_URL=${NEXT_PUBLIC_LIVEKIT_URL:-ws://localhost:7880}
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
-    # Bind mount hides image node_modules; anonymous volume can stay stale after new deps.
-    # Install on start; drop .next before dev to avoid missing vendor-chunks (e.g. next-themes) after dep changes.
-    command: sh -c "npm install && rm -rf .next && npm run dev"
-
-
 
   # ── Celery Worker ────────────────────────────────────────────────────────────
   worker:
@@ -99,28 +93,23 @@ services:
         condition: service_healthy
     command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4
 
-  # ── ChromaDB (vector store for RAG) ─────────────────────────────────────────
-  chroma:
-    image: chromadb/chroma:latest
-    container_name: hackathon-chroma
-    ports:
-      - "8100:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
 
-  # ── RedisInsight (Redis UI) ──────────────────────────────────────────────────
-  redisinsight:
-    image: redislabs/redisinsight:latest
-    container_name: hackathon-redisinsight
+
+  # ── LiveKit Server (WebRTC) ──────────────────────────────────────────────────
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: hackathon-livekit
+    command: --dev --bind 0.0.0.0
     ports:
-      - "8002:8001"
-    depends_on:
-      - redis
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    environment:
+      - "LIVEKIT_KEYS=devkey: secret"
 
 volumes:
   postgres_data:
   redis_data:
-  chroma_data:
 
 networks:
   default:

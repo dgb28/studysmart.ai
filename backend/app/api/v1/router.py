@@ -13,6 +13,7 @@ from app.api.v1.routes import (
     leaderboard,
     learning,
     topics_ai,
+    webrtc,
 )
 
 api_router = APIRouter()
@@ -29,6 +30,7 @@ api_router.include_router(timer.router, prefix="/timer", tags=["Timer"])
 api_router.include_router(leaderboard.router, prefix="/leaderboard", tags=["Leaderboard"])
 api_router.include_router(learning.router, prefix="/learning", tags=["Learning AI"])
 api_router.include_router(topics_ai.router, prefix="/topic", tags=["Topic AI"])
+api_router.include_router(webrtc.router, prefix="/rooms/webrtc", tags=["Study Rooms"])
 
 # Add more routers here as you build features:
 # from app.api.v1.routes import posts, uploads, etc.

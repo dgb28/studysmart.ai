@@ -28,7 +28,7 @@ CRITICAL RULES:
 - Never work on a module already claimed by another developer.
 - Audio/WebRTC components must rely on secure HTTPS/WSS when not on localhost. Support graceful degradation.
 - AI Logic for grading should output strict Pydantic/JSON schemas for the Adaptive Study Plan Generator to consume.
-- If you add an env variable for a new LLM provider, add it to .env.example AND docs/ENV_SETUP.md.
+- If you add an env variable for a new LLM provider or Video service (e.g. LiveKit), add it to .env.example AND docs/ENV_SETUP.md.
 - Commit frequently with descriptive messages.
 ```
 
@@ -50,7 +50,7 @@ make setup
 ### Step 3 — Copy environment file
 ```bash
 cp .env.example .env
-# ⚠️ Open .env and ensure OPENAI_API_KEY and ELEVENLABS_API_KEY are set for Voice features.
+# ⚠️ Open .env and ensure OPENAI_API_KEY, ELEVENLABS_API_KEY, and LIVEKIT_API_KEY are set for Voice & Video features.
 ```
 
 ### Step 4 — Start all services

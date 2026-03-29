@@ -157,6 +157,7 @@ export default function AppHeader() {
           { href: "/dashboard", label: "Paths" },
           { href: "/dashboard/goals", label: "Goals" },
           { href: "/dashboard/analytics", label: "Analysis" },
+          { href: "/rooms", label: "Rooms" },
           { href: "/home", label: "Home" },
         ].map((item) => (
           <motion.div key={item.href} variants={navItem} initial="rest" whileHover="hover" whileTap="tap">

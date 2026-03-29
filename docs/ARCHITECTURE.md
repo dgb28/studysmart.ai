@@ -8,9 +8,9 @@
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                     Frontend (Next.js 14)                     │
-│  Learning Dashboard · Performance Analytics · Voice Chat UI   │
+│  Learning Dashboard · Live Study Rooms (PiP) · Voice Chat UI  │
 └──────────────────────────────┬───────────────────────────────┘
-                               │  HTTPS / WebSockets / WebRTC
+                               │  HTTPS / WebSockets / WebRTC (LiveKit)
                                ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                     Backend (FastAPI)                         │
@@ -73,9 +73,24 @@ WebSocket Connection (or periodic POST)
      ▼
 Friction Detection Service (FastAPI backend)
      │ 3. Analyzes rolling window. If inactivity > threshold:
-     - **Coach Hub**: Built with `@elevenlabs/client`. Uses a custom React hook `useVoiceConversation` to synchronize conversational AI state with a floating chat drawer.
-    - **Context Injection**: Uses ElevenLabs Dynamic Variables to inject `topic_title` and `topic_content` into the agent's system prompt in real-time.
-g you?"
+- **Coach Hub**: Built with `@elevenlabs/client`. Uses a custom React hook `useVoiceConversation` to synchronize conversational AI state with a floating chat drawer.
+- **Context Injection**: Uses ElevenLabs Dynamic Variables to inject `topic_title` and `topic_content` into the agent's system prompt in real-time.
+
+## Data Flow: Live Study Rooms
+```
+User navigates to /rooms 
+     │ 1. Clicks "Join Study Room"
+     ▼
+FastAPI Backend (/api/v1/rooms/webrtc)
+     │ 2. Validates user, generates LiveKit JWT (audio: false, video: true)
+     ▼
+LiveKit Server
+     │ 3. Establishes WebRTC mesh/SFU connection over WSS
+     ▼
+Next.js Global Context (StudyRoomProvider)
+     │ 4. User navigates to /dashboard
+     ▼
+Floating PiP Video Overlay activates automatically.
 ```
 
 ## Data Flow: Proof of Learning (Micro-Challenge)

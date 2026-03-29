@@ -3,9 +3,9 @@ import AnimatedBackdrop from "@/components/AnimatedBackdrop";
 import FloatingVideoOverlay from "@/components/FloatingVideoOverlay";
 
 /**
- * Shared shell: animated backdrop, timer, streak, rank, nav.
+ * Rooms shell: same navigation and backdrop as the (main) route group.
  */
-export default function MainShellLayout({ children }: { children: React.ReactNode }) {
+export default function RoomsShellLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--background)] transition-colors duration-300">
       <AnimatedBackdrop />
