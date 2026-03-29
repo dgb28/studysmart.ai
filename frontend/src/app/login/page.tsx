@@ -43,57 +43,31 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-md space-y-5 glass-panel p-8 md:p-9">
+      <div className="relative z-20 w-full max-w-md space-y-6 rounded-3xl border border-emerald-500/20 bg-slate-950/80 p-8 shadow-2xl shadow-emerald-900/20 backdrop-blur pointer-events-auto md:p-9">
         <div className="text-center relative">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
             <GraduationCap className="h-8 w-8" strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">
+          <h1 className="text-3xl font-bold tracking-tight text-white">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm text-slate-300">
             Sign in to your account
           </p>
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <button
-              type="submit"
-              form="login-form"
-              className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold"
-              style={{
-                backgroundColor: "#10b981",
-                color: "#ffffff",
-                border: "1px solid rgba(16,185,129,0.95)",
-              }}
-            >
-              Sign in
-            </button>
-            <Link
-              href="/signup"
-              className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold"
-              style={{
-                backgroundColor: "rgba(16,185,129,0.16)",
-                color: "#ecfeff",
-                border: "1px solid rgba(16,185,129,0.45)",
-                textDecoration: "none",
-              }}
-            >
-              Create account
-            </Link>
-          </div>
         </div>
 
         {err && (
-          <p className="text-[var(--error)] text-sm font-medium text-center rounded-xl bg-[var(--error-bg)] py-3 px-4">
+          <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-center text-sm font-medium text-red-300">
             {err}
           </p>
         )}
 
-        <form id="login-form" onSubmit={submit} className="space-y-4 pb-1">
+        <form id="login-form" onSubmit={submit} className="relative z-30 space-y-4 pointer-events-auto">
           <div className="space-y-3">
             <div className="relative group">
               <Mail className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <input
-                className="input-orbit input-orbit--leading-icon w-full pl-12 h-12"
+                className="input-orbit input-orbit--leading-icon h-12 w-full pl-12 pointer-events-auto"
                 placeholder="Email address"
                 type="email"
                 value={email}
@@ -103,7 +77,7 @@ export default function LoginPage() {
             <div className="relative group">
               <Lock className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <input
-                className="input-orbit input-orbit--leading-icon w-full pl-12 h-12"
+                className="input-orbit input-orbit--leading-icon h-12 w-full pl-12 pointer-events-auto"
                 placeholder="Password"
                 type="password"
                 value={password}
@@ -114,7 +88,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full h-12 flex items-center justify-center gap-2 rounded-xl font-semibold"
+            className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl font-semibold pointer-events-auto"
             style={{
               backgroundColor: "#10b981",
               color: "#ffffff",
@@ -127,15 +101,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm font-medium text-slate-100">
-          <span>Don&apos;t have an account?</span>
+        <div className="relative z-30 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm font-medium text-emerald-100 pointer-events-auto">
+          <span>Don&apos;t have an account?</span>{" "}
           <Link
             href="/signup"
-            className="ml-2 inline-flex items-center rounded-lg px-3 py-1.5 font-semibold"
+            className="cursor-pointer font-semibold underline decoration-emerald-300/60 underline-offset-4 hover:text-white"
             style={{
-              backgroundColor: "rgba(16,185,129,0.18)",
-              color: "#ecfeff",
-              border: "1px solid rgba(16,185,129,0.45)",
+              color: "#d1fae5",
             }}
           >
             Create account

@@ -27,12 +27,18 @@ export default function StudyLoungePage() {
       const { token } = await api<{ token: string }>(`/rooms/webrtc/token?room=${roomId}`);
       joinRoom(roomId, token);
       router.push(`/rooms/${roomId}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to join room:', error);
-      if (error?.status === 401) {
+      const status = typeof error === 'object' && error && 'status' in error
+        ? Number((error as { status?: number }).status)
+        : undefined;
+
+      if (status === 401) {
         alert('Your session has expired. Please log in again.');
         localStorage.removeItem('sp_token');
         router.push('/login');
+      } else if (status === 503) {
+        alert('Study rooms are temporarily unavailable. Please ask admin to enable LiveKit in backend.');
       } else {
         alert('Could not join the study room. Please try again.');
       }
@@ -42,18 +48,18 @@ export default function StudyLoungePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
+    <div className="mx-auto max-w-5xl space-y-8 pb-12">
       {/* Header Section */}
       <section className="text-center space-y-4 pt-4">
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="inline-flex items-center justify-center p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 mb-2"
+          className="mb-2 inline-flex items-center justify-center rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-3"
         >
-          <Users className="w-8 h-8 text-cyan-400" />
+          <Users className="h-8 w-8 text-cyan-600 dark:text-cyan-300" />
         </motion.div>
-        <h1 className="text-4xl font-bold tracking-tight text-white">Live Study Lounge</h1>
-        <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+        <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)]">Live Study Lounge</h1>
+        <p className="mx-auto max-w-2xl text-lg text-[var(--muted)]">
           Deep work is better together. Join a silent study room, stay accountable with your camera, and master your goals.
         </p>
       </section>
@@ -61,12 +67,12 @@ export default function StudyLoungePage() {
       <div className="grid md:grid-cols-5 gap-8 items-start">
         {/* Rules & Decorum */}
         <section className="md:col-span-3 space-y-6">
-          <div className="glass-panel p-6 rounded-3xl border-white/5 space-y-6">
+          <div className="glass-panel space-y-6 rounded-3xl border border-[var(--border)] p-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <Info className="w-5 h-5 text-amber-400" />
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2">
+                <Info className="h-5 w-5 text-amber-600 dark:text-amber-300" />
               </div>
-              <h2 className="text-xl font-semibold text-white">Room Decorum</h2>
+              <h2 className="text-xl font-semibold text-[var(--foreground)]">Room Decorum</h2>
             </div>
             
             <div className="space-y-4">
@@ -76,10 +82,10 @@ export default function StudyLoungePage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex gap-4 items-start p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors"
+                  className="flex items-start gap-4 rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 transition-colors hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]"
                 >
-                  <rule.icon className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
-                  <p className="text-zinc-300 text-sm leading-relaxed">{rule.text}</p>
+                  <rule.icon className="mt-0.5 h-5 w-5 shrink-0 text-slate-500 dark:text-zinc-400" />
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-zinc-300">{rule.text}</p>
                 </motion.div>
               ))}
             </div>
@@ -90,14 +96,14 @@ export default function StudyLoungePage() {
         <section className="md:col-span-2 space-y-6">
           <motion.div 
             whileHover={{ y: -4 }}
-            className="glass-panel p-8 rounded-3xl border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-transparent flex flex-col items-center text-center space-y-6 shadow-2xl shadow-cyan-500/5"
+            className="glass-panel flex flex-col items-center space-y-6 rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent p-8 text-center shadow-2xl shadow-cyan-500/10"
           >
-            <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-              <Camera className="w-8 h-8 text-cyan-400" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/20">
+              <Camera className="h-8 w-8 text-cyan-600 dark:text-cyan-300" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white">Ready to Focus?</h3>
-              <p className="text-zinc-400 text-sm px-4">
+              <h3 className="text-2xl font-bold text-[var(--foreground)]">Ready to Focus?</h3>
+              <p className="px-4 text-sm text-[var(--muted)]">
                 Click join to open your camera and enter the global study lounge.
               </p>
             </div>
@@ -105,22 +111,22 @@ export default function StudyLoungePage() {
             <button
               onClick={handleJoin}
               disabled={isJoining}
-              className="w-full group relative inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-2xl transition-all shadow-lg shadow-cyan-500/25 disabled:opacity-50"
+              className="group relative inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-cyan-500 px-8 py-4 font-bold text-black shadow-lg shadow-cyan-500/25 transition-all hover:bg-cyan-400 disabled:opacity-50"
             >
               {isJoining ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
                   Connecting...
                 </span>
               ) : (
                 <>
                   Join Study Room
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </>
               )}
             </button>
             
-            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-[var(--muted)]">
               12 Users Studying Currently
             </p>
           </motion.div>
