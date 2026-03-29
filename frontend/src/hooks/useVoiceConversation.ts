@@ -24,7 +24,7 @@ export function formatVoiceSessionError(raw: string): string {
   const m = raw.replace(/^Server error:\s*/i, "").trim();
   if (
     /quota limit|exceeds your quota|exceed.*quota|1002.*quota|protocol error.*quota/i.test(
-      raw + m
+      raw + m,
     )
   ) {
     return (
@@ -36,15 +36,14 @@ export function formatVoiceSessionError(raw: string): string {
 }
 
 function clampDynamicVariables(
-  vars: Record<string, string> | undefined
+  vars: Record<string, string> | undefined,
 ): Record<string, string> | undefined {
   if (!vars) return undefined;
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(vars)) {
     if (k === "topic_content" && v.length > MAX_TOPIC_CONTENT_CHARS) {
       out[k] =
-        v.slice(0, MAX_TOPIC_CONTENT_CHARS) +
-        "\n… [truncated for voice coach]";
+        v.slice(0, MAX_TOPIC_CONTENT_CHARS) + "\n… [truncated for voice coach]";
     } else {
       out[k] = v;
     }
@@ -60,9 +59,9 @@ export function useVoiceConversation({
   dynamicVariables,
 }: UseVoiceConversationProps) {
   const [isActive, setIsActive] = useState(false);
-  const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">(
-    "disconnected"
-  );
+  const [status, setStatus] = useState<
+    "connected" | "connecting" | "disconnected"
+  >("disconnected");
   const [messages, setMessages] = useState<Message[]>([]);
   const conversationRef = useRef<unknown>(null);
 
@@ -77,7 +76,7 @@ export function useVoiceConversation({
       let conversationToken: string | undefined;
       try {
         const r = await fetch(
-          `/api/convai/token?agent_id=${encodeURIComponent(agentId)}`
+          `/api/convai/token?agent_id=${encodeURIComponent(agentId)}`,
         );
         if (r.ok) {
           const j = (await r.json()) as { token?: string };
@@ -93,7 +92,7 @@ export function useVoiceConversation({
             "ConvAI token route failed:",
             r.status,
             err?.error,
-            err?.detail
+            err?.detail,
           );
         }
       } catch (e) {
@@ -149,12 +148,16 @@ export function useVoiceConversation({
     } catch (err) {
       console.error("Failed to start conversation:", err);
       setStatus("disconnected");
-      onError?.(err instanceof Error ? err.message : "Failed to start conversation");
+      onError?.(
+        err instanceof Error ? err.message : "Failed to start conversation",
+      );
     }
   }, [agentId, dynamicVariables, onConnect, onDisconnect, onError]);
 
   const stopConversation = useCallback(async () => {
-    const conv = conversationRef.current as { endSession?: () => Promise<void> } | null;
+    const conv = conversationRef.current as {
+      endSession?: () => Promise<void>;
+    } | null;
     if (conv?.endSession) {
       await conv.endSession();
       conversationRef.current = null;
@@ -171,7 +174,9 @@ export function useVoiceConversation({
 
   useEffect(() => {
     return () => {
-      const conv = conversationRef.current as { endSession?: () => void } | null;
+      const conv = conversationRef.current as {
+        endSession?: () => void;
+      } | null;
       void conv?.endSession?.();
     };
   }, []);
