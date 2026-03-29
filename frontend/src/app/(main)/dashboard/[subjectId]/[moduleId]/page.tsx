@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import VoiceCoach from "@/components/VoiceCoach";
 import { getToken, api, isUnauthorized } from "@/lib/api";
+import { useActivityTracker } from "@/hooks/useActivityTracker";
 
 type Topic = { id: string; title: string; content: string | null; order: number };
 type QuizQ = { index: number; question: string; options: string[] };
@@ -40,6 +41,19 @@ export default function StudyPage() {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   const topic = topics[idx];
+
+  // Global activity tracking for the topic page
+  useActivityTracker({
+    idleTimeoutMs: 30000,
+    onActiveStatusChange: useCallback((isActive: boolean, counts?: any) => {
+      if (!topic || phase === "locked") return; // Do not track if user isn't on an unlocked topic
+      const payload: any = { action: isActive ? "start" : "pause", topic_id: topic.id };
+      if (!isActive && counts) {
+        payload.events = counts;
+      }
+      api("/timer/action", { method: "POST", json: payload }).catch(console.error);
+    }, [topic, phase])
+  });
 
   const loadBoard = useCallback(() => {
     if (!getToken()) return;
