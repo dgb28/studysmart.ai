@@ -9,6 +9,30 @@ async def ensure_postgres_schema(conn: AsyncConnection) -> None:
     await conn.execute(
         text(
             """
+            ALTER TABLE daily_goals
+            ADD COLUMN IF NOT EXISTS is_suggested BOOLEAN NOT NULL DEFAULT FALSE
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
+            ALTER TABLE daily_goals
+            ADD COLUMN IF NOT EXISTS user_edited BOOLEAN NOT NULL DEFAULT FALSE
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
+            ALTER TABLE daily_goals
+            ADD COLUMN IF NOT EXISTS source_meta JSONB
+            """
+        )
+    )
+    await conn.execute(
+        text(
+            """
             ALTER TABLE subjects
             ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id) ON DELETE CASCADE
             """

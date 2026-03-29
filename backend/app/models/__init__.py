@@ -15,6 +15,7 @@ from app.models.daily_activity import DailyActivity
 from app.models.topic_quiz import TopicQuiz
 from app.models.quiz_attempt import QuizAttempt
 from app.models.user_topic_state import UserTopicState
+from app.models.user_goal_profile import UserGoalProfile
 
 __all__ = [
     "BaseModel",
@@ -30,4 +31,5 @@ __all__ = [
     "TopicQuiz",
     "QuizAttempt",
     "UserTopicState",
+    "UserGoalProfile",
 ]

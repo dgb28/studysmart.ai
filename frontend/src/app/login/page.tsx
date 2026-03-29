@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, LogIn } from "lucide-react";
 import { setToken, api } from "@/lib/api";
+import { formatApiError } from "@/lib/apiErrors";
 import { HOME_GREETING_FROM_REGISTER_KEY } from "@/lib/homeGreeting";
 import AnimatedBackdrop from "@/components/AnimatedBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -27,8 +28,8 @@ export default function LoginPage() {
       setToken(data.access_token);
       sessionStorage.removeItem(HOME_GREETING_FROM_REGISTER_KEY);
       router.push("/home");
-    } catch {
-      setErr("Login failed — check email and password.");
+    } catch (e) {
+      setErr(formatApiError(e));
     }
   }
 

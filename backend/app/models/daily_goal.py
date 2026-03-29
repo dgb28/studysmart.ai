@@ -1,6 +1,6 @@
 """Daily goals (todo-style) per user."""
 from sqlalchemy import Column, String, Boolean, Date, ForeignKey, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -13,5 +13,8 @@ class DailyGoal(BaseModel):
     target_date = Column(Date, nullable=False, index=True)
     completed = Column(Boolean, default=False, nullable=False)
     completed_at = Column(DateTime(timezone=True), nullable=True)
+    is_suggested = Column(Boolean, default=False, nullable=False)
+    user_edited = Column(Boolean, default=False, nullable=False)
+    source_meta = Column(JSONB, nullable=True)
 
     user = relationship("User", back_populates="daily_goals")

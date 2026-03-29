@@ -25,3 +25,6 @@ class User(BaseModel):
     daily_activities = relationship("DailyActivity", back_populates="user", cascade="all, delete-orphan")
     quiz_attempts = relationship("QuizAttempt", back_populates="user", cascade="all, delete-orphan")
     topic_states = relationship("UserTopicState", back_populates="user", cascade="all, delete-orphan")
+    goal_profile = relationship(
+        "UserGoalProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )

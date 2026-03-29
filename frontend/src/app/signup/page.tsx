@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { UserPlus, Mail, Lock, User } from "lucide-react";
 import { setToken, api } from "@/lib/api";
+import { formatApiError } from "@/lib/apiErrors";
 import { HOME_GREETING_FROM_REGISTER_KEY } from "@/lib/homeGreeting";
 import AnimatedBackdrop from "@/components/AnimatedBackdrop";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -28,8 +29,13 @@ export default function SignupPage() {
       setToken(data.access_token);
       sessionStorage.setItem(HOME_GREETING_FROM_REGISTER_KEY, "1");
       router.push("/home");
-    } catch {
-      setErr("Signup failed — email may already be registered.");
+    } catch (e) {
+      const msg = formatApiError(e);
+      setErr(
+        msg.includes("already registered") || msg.includes("Email already")
+          ? "That email is already registered — try signing in."
+          : msg
+      );
     }
   }
 

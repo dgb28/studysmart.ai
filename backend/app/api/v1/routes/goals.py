@@ -13,6 +13,12 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.daily_goal import DailyGoal
 from app.services.activity import record_activity_day
+from app.services.goal_suggestions import (
+    get_or_create_profile,
+    record_completion_adaptation,
+    record_module_activity,
+    sync_today_suggestions,
+)
 
 router = APIRouter()
 
@@ -34,6 +40,8 @@ class GoalRead(BaseModel):
     target_date: date
     completed: bool
     completed_at: datetime | None
+    is_suggested: bool = False
+    user_edited: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -42,6 +50,34 @@ class DaySummary(BaseModel):
     total: int
     completed: int
     percent: int
+
+
+class ActivityBody(BaseModel):
+    module_id: uuid.UUID
+    topic_id: uuid.UUID | None = None
+    event: str  # content_viewed | quiz_passed | topic_opened
+
+
+@router.post("/activity")
+async def record_study_activity(
+    body: ActivityBody,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Called from module study page to adapt future suggestions."""
+    await record_module_activity(
+        db, user.id, body.module_id, body.topic_id, body.event
+    )
+    return {"ok": True}
+
+
+@router.post("/suggestions/sync")
+async def sync_goal_suggestions(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Fill today's list toward 5 tasks using learning-path context (adds only empty slots)."""
+    return await sync_today_suggestions(db, user)
 
 
 @router.get("/", response_model=list[GoalRead])
@@ -135,6 +171,8 @@ async def update_goal(
     if not g:
         raise HTTPException(404, "Goal not found")
     if body.title is not None:
+        if body.title.strip() != g.title.strip():
+            g.user_edited = True
         g.title = body.title
     if body.target_date is not None:
         g.target_date = body.target_date
@@ -143,6 +181,8 @@ async def update_goal(
         g.completed_at = datetime.now(timezone.utc) if body.completed else None
         if body.completed:
             await record_activity_day(db, user.id)
+            prof = await get_or_create_profile(db, user.id)
+            record_completion_adaptation(prof, g.target_date)
     await db.flush()
     await db.refresh(g)
     return g

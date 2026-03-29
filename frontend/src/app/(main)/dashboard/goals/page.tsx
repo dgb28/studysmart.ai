@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Plus, Trash2, Check, RotateCcw, Target } from "lucide-react";
+import { Calendar, Plus, Trash2, Check, RotateCcw, Target, Pencil, Sparkles, X } from "lucide-react";
 import { getToken, api, isUnauthorized } from "@/lib/api";
 
 type Goal = {
@@ -12,7 +12,11 @@ type Goal = {
   target_date: string;
   completed: boolean;
   completed_at: string | null;
+  is_suggested?: boolean;
+  user_edited?: boolean;
 };
+
+const EDIT_HINT_KEY = "studypulse_dismiss_goals_edit_hint";
 
 type DaySum = { day: string; total: number; completed: number; percent: number };
 
@@ -37,11 +41,21 @@ export default function GoalsPage() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [pick, setPick] = useState<string | null>(null);
   const [hoverDay, setHoverDay] = useState<string | null>(null);
+  const [showEditHint, setShowEditHint] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [syncReason, setSyncReason] = useState<string | null>(null);
 
   async function load() {
     if (!getToken()) {
       router.replace("/login");
       return;
+    }
+    try {
+      const s = await api<{ created: number; reason: string }>("/goals/suggestions/sync", { method: "POST" });
+      setSyncReason(s.reason);
+    } catch {
+      setSyncReason("error");
     }
     const g = await api<Goal[]>("/goals/?include_past_incomplete=true");
     setGoals(g);
@@ -55,10 +69,26 @@ export default function GoalsPage() {
   }
 
   useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(EDIT_HINT_KEY) !== "1") {
+      setShowEditHint(true);
+    }
     load().catch((e) => {
       if (isUnauthorized(e)) router.replace("/login");
     });
   }, [router]);
+
+  function dismissEditHint() {
+    localStorage.setItem(EDIT_HINT_KEY, "1");
+    setShowEditHint(false);
+  }
+
+  async function saveEdit(g: Goal) {
+    const t = editTitle.trim();
+    setEditingId(null);
+    if (!t || t === g.title) return;
+    await api(`/goals/${g.id}`, { method: "PATCH", json: { title: t } });
+    load();
+  }
 
   async function addGoal(e: React.FormEvent) {
     e.preventDefault();
@@ -81,6 +111,13 @@ export default function GoalsPage() {
   const today = new Date().toISOString().slice(0, 10);
   const pastIncomplete = goals.filter((g) => g.target_date < today && !g.completed);
   const selectedGoals = pick ? goals.filter((g) => g.target_date === pick) : [];
+  const todayGoals = goals
+    .filter((g) => g.target_date === today)
+    .slice()
+    .sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      return a.title.localeCompare(b.title);
+    });
 
   return (
     <motion.div className="space-y-10" variants={container} initial="hidden" animate="show">
@@ -121,6 +158,119 @@ export default function GoalsPage() {
           Add goal
         </motion.button>
       </motion.form>
+
+      {showEditHint && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 pr-10 text-sm text-slate-800 dark:text-cyan-100/95"
+          role="status"
+        >
+          <Sparkles className="mb-1 inline h-4 w-4 text-cyan-500" aria-hidden />
+          <span className="font-medium"> Suggested tasks are yours to change.</span> Edit wording, delete what doesn’t fit, or add your own — we’ll keep filling open
+          slots from your learning paths.
+          <button
+            type="button"
+            onClick={dismissEditHint}
+            className="absolute right-2 top-2 rounded-full p-1.5 text-slate-500 hover:bg-black/10 dark:hover:bg-white/10"
+            aria-label="Dismiss"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
+
+      {(todayGoals.length > 0 || syncReason === "no_learning_paths") && (
+        <motion.div variants={item} className="glass-panel rounded-[2rem] p-6 md:p-8">
+          <h2 className="mb-1 flex flex-wrap items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
+            <Sparkles className="h-5 w-5 text-violet-400" />
+            Today&apos;s tasks
+            <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-xs font-normal text-violet-700 dark:text-violet-300">
+              up to 5 active · auto-filled from your paths
+            </span>
+          </h2>
+          <p className="mb-5 text-sm text-zinc-500">
+            Complete a few and we&apos;ll suggest new ones to keep your list at five when you open this page.
+          </p>
+          {syncReason === "no_learning_paths" && todayGoals.length === 0 && (
+            <p className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100">
+              Create a learning path from the home or paths screen — then we&apos;ll suggest daily tasks based on what
+              you&apos;re studying.
+            </p>
+          )}
+          <ul className="space-y-3">
+            {todayGoals.map((g) => (
+              <li
+                key={g.id}
+                className="flex flex-col gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-white/10"
+              >
+                <div className="min-w-0 flex-1">
+                  {editingId === g.id ? (
+                    <input
+                      className="input-orbit w-full text-sm"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onBlur={() => saveEdit(g)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                        if (e.key === "Escape") setEditingId(null);
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {g.is_suggested && (
+                        <span className="rounded-md bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                          Suggested
+                        </span>
+                      )}
+                      <span
+                        className={
+                          g.completed ? "line-through text-zinc-500 text-sm" : "text-sm text-slate-200 dark:text-zinc-100"
+                        }
+                      >
+                        {g.title}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  {editingId !== g.id && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingId(g.id);
+                        setEditTitle(g.title);
+                      }}
+                      className="rounded-full p-2 text-zinc-400 hover:bg-white/10 hover:text-cyan-400"
+                      aria-label="Edit title"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => toggle(g)}
+                    className="rounded-full p-2 hover:bg-cyan-500/15 text-cyan-400"
+                  >
+                    {g.completed ? <RotateCcw className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(g.id)}
+                    className="rounded-full p-2 hover:bg-red-500/15 text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {todayGoals.length === 0 && syncReason && syncReason !== "no_learning_paths" && (
+            <p className="text-sm text-zinc-500">No tasks dated for today yet — add one above or open this page again after studying.</p>
+          )}
+        </motion.div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
         <motion.div variants={item} className="glass-panel rounded-[2rem] p-6 md:p-8">

@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import VoiceCoach from "@/components/VoiceCoach";
 import { getToken, api, isUnauthorized } from "@/lib/api";
+import { recordStudyActivity } from "@/lib/goalActivity";
 
 type Topic = { id: string; title: string; content: string | null; order: number };
 type QuizQ = { index: number; question: string; options: string[] };
@@ -98,6 +99,11 @@ export default function StudyPage() {
     setAnswers([]);
   }, [topic?.id, refreshTopicState]);
 
+  useEffect(() => {
+    if (!module?.id || !topic?.id) return;
+    recordStudyActivity({ module_id: module.id, topic_id: topic.id, event: "topic_opened" });
+  }, [module?.id, topic?.id]);
+
   async function ensureAiContent() {
     if (!topic) return;
     setLoadingContent(true);
@@ -117,8 +123,9 @@ export default function StudyPage() {
   }
 
   async function markRead() {
-    if (!topic) return;
+    if (!topic || !module) return;
     await api(`/topic/${topic.id}/content-viewed`, { method: "POST" });
+    recordStudyActivity({ module_id: module.id, topic_id: topic.id, event: "content_viewed" });
     setPhase("quiz");
     try {
       const q = await api<{ questions: QuizQ[] }>(`/topic/${topic.id}/quiz`);
@@ -131,7 +138,7 @@ export default function StudyPage() {
   }
 
   async function submitQuiz() {
-    if (!topic) return;
+    if (!topic || !module) return;
     const unanswered = answers.findIndex((a) => a < 0);
     if (unanswered !== -1) {
       alert(`Please answer question ${unanswered + 1} before submitting.`);
@@ -146,6 +153,7 @@ export default function StudyPage() {
       setResult(res);
       if (res.passed) {
         setQuizPassed(true);
+        recordStudyActivity({ module_id: module.id, topic_id: topic.id, event: "quiz_passed" });
         if (sessionId) {
           await api(`/sessions/${sessionId}/complete-topic`, {
             method: "POST",
