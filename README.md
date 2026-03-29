@@ -84,6 +84,7 @@ See [`infra/`](infra/) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 | [`docs/ENV_SETUP.md`](docs/ENV_SETUP.md) | Environment & cloud CLI setup |
 | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) | Current bugs & workarounds |
 | [`docs/PRODUCTION_CHECKLIST.md`](docs/PRODUCTION_CHECKLIST.md) | Pre-deploy checklist |
+| [`docs/DEPLOY_VERCEL.md`](docs/DEPLOY_VERCEL.md) | Frontend on Vercel + backend hosting steps |
 | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Common errors & fixes |
 | [`docs/COLLABORATION.md`](docs/COLLABORATION.md) | AI agent teamwork guide |
 

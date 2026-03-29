@@ -36,6 +36,49 @@ function extractText(node: React.ReactNode): string {
   return "";
 }
 
+function MarkdownUl({ children }: { children?: React.ReactNode }) {
+  const depth = useContext(ListDepthContext);
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ul className="mb-5 ml-1 space-y-2">{children}</ul>
+    </ListDepthContext.Provider>
+  );
+}
+
+function MarkdownOl({ children }: { children?: React.ReactNode }) {
+  const depth = useContext(ListDepthContext);
+  return (
+    <ListDepthContext.Provider value={depth + 1}>
+      <ol className="mb-5 ml-1 space-y-2 list-none">{children}</ol>
+    </ListDepthContext.Provider>
+  );
+}
+
+function MarkdownLi({ children }: any) {
+  const depth = useContext(ListDepthContext);
+
+  // Skip rendering near-empty list items (lone dots, commas, etc.)
+  if (isEmptyLiContent(children)) return null;
+
+  // Symbol lookup
+  const symbol = getUlSymbol(Math.max(0, depth - 1));
+
+  // Symbol styles per depth
+  const symbolStyle =
+    depth <= 1
+      ? "text-emerald-500 font-bold text-base leading-7 mt-0 shrink-0 w-4"
+      : depth === 2
+      ? "text-emerald-400/70 text-xs leading-7 mt-[2px] shrink-0 w-4"
+      : "text-slate-400 text-xs leading-7 mt-[2px] shrink-0 w-4";
+
+  return (
+    <li className="flex items-start gap-2 text-[var(--muted)] text-[15px] leading-7">
+      <span className={symbolStyle}>{symbol}</span>
+      <span className="flex-1 min-w-0">{children}</span>
+    </li>
+  );
+}
+
 export default function LessonContent({ content }: LessonContentProps) {
   const components: Components = {
     // ── Headings ──────────────────────────────────────────────────────────
@@ -81,52 +124,9 @@ export default function LessonContent({ content }: LessonContentProps) {
     ),
 
     // ── Lists ─────────────────────────────────────────────────────────────
-    ul: ({ children }) => {
-      const depth = useContext(ListDepthContext);
-      return (
-        <ListDepthContext.Provider value={depth + 1}>
-          <ul className="mb-5 ml-1 space-y-2">{children}</ul>
-        </ListDepthContext.Provider>
-      );
-    },
-
-    ol: ({ children }) => {
-      const depth = useContext(ListDepthContext);
-      return (
-        <ListDepthContext.Provider value={depth + 1}>
-          <ol className="mb-5 ml-1 space-y-2 list-none">{children}</ol>
-        </ListDepthContext.Provider>
-      );
-    },
-
-    li: ({ children, ...props }) => {
-      const depth = useContext(ListDepthContext);
-
-      // Skip rendering near-empty list items (lone dots, commas, etc.)
-      if (isEmptyLiContent(children)) return null;
-
-      // Detect if parent is ordered list
-      const isOrdered = (props as any).node?.parent?.type === "list"
-        && (props as any).node?.parent?.ordered === true;
-
-      // Symbol lookup
-      const symbol = getUlSymbol(depth - 1);
-
-      // Symbol styles per depth
-      const symbolStyle =
-        depth === 1
-          ? "text-emerald-500 font-bold text-base leading-7 mt-0 shrink-0 w-4"
-          : depth === 2
-          ? "text-emerald-400/70 text-xs leading-7 mt-[2px] shrink-0 w-4"
-          : "text-slate-400 text-xs leading-7 mt-[2px] shrink-0 w-4";
-
-      return (
-        <li className="flex items-start gap-2 text-[var(--muted)] text-[15px] leading-7">
-          <span className={symbolStyle}>{symbol}</span>
-          <span className="flex-1 min-w-0">{children}</span>
-        </li>
-      );
-    },
+    ul: MarkdownUl,
+    ol: MarkdownOl,
+    li: MarkdownLi,
 
     // ── Code ─────────────────────────────────────────────────────────────
     code: ({ inline, className, children, ...props }: any) => {

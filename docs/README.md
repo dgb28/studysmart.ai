@@ -8,6 +8,7 @@
 | [ENV_SETUP.md](ENV_SETUP.md) | Developer environment + multi-cloud (AWS/GCP) setup |
 | [KNOWN_ISSUES.md](KNOWN_ISSUES.md) | Open bugs, limitations, and workarounds |
 | [PRODUCTION_CHECKLIST.md](PRODUCTION_CHECKLIST.md) | Pre-deployment checklist (Security, Scale, AI limits) |
+| [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md) | Frontend Vercel deployment + backend hosting guide |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common errors with Realtime Audio, Websockets, and DBs |
 | [COLLABORATION.md](COLLABORATION.md) | Parallel development rules for Human + AI Agents |
 
