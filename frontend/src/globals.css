@@ -1,17 +1,89 @@
 @import "tailwindcss";
 @source "./**/*";
 
+/* Class-based dark mode (next-themes sets `dark` on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  --background: #f0f2f8;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: rgba(15, 23, 42, 0.1);
+  --card: rgba(255, 255, 255, 0.92);
+  --card-hover: rgba(241, 245, 249, 0.95);
+  --accent: #4f46e5;
+  --accent2: #7c3aed;
+  --success: #059669;
+  --glow-cyan: rgba(6, 182, 212, 0.2);
+  --glow-violet: rgba(124, 58, 237, 0.15);
+  --glass-bg-1: rgba(255, 255, 255, 0.95);
+  --glass-bg-2: rgba(255, 255, 255, 0.65);
+  --glass-bg-3: rgba(255, 255, 255, 0.75);
+  --glass-inset: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --input-border: rgba(15, 23, 42, 0.12);
+  --btn-glow-shadow: 0 0 24px rgba(79, 70, 229, 0.2);
+  --noise-opacity: 0.02;
+  --orb-a: rgba(6, 182, 212, 0.14);
+  --orb-b: rgba(124, 58, 237, 0.12);
+  --orb-c: rgba(192, 38, 211, 0.1);
+  --mesh-opacity: 0.55;
+  --home-hero-bg: #eef0f5;
+  --home-card-bg: #ffffff;
+  --home-card-border: rgba(15, 23, 42, 0.08);
+  --home-card-shadow: 0 8px 40px rgba(15, 23, 42, 0.07);
+  --home-eyebrow: #94a3b8;
+  --home-title: #0f172a;
+  --home-muted: #64748b;
+  --home-input-border: rgba(15, 23, 42, 0.15);
+  --home-mic-bg: #ede9fe;
+  --home-link-bg: #ede9fe;
+  --home-link-text: #4338ca;
+  --gradient-from: #0891b2;
+  --gradient-mid: #7c3aed;
+  --gradient-to: #db2777;
+}
+
+.dark {
   --background: #050508;
   --foreground: #f4f4f5;
   --muted: #a1a1aa;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
   --card: rgba(18, 18, 22, 0.65);
+  --card-hover: rgba(30, 30, 36, 0.85);
   --accent: #22d3ee;
   --accent2: #a78bfa;
   --success: #34d399;
   --glow-cyan: rgba(34, 211, 238, 0.35);
   --glow-violet: rgba(167, 139, 250, 0.3);
+  --glass-bg-1: rgba(255, 255, 255, 0.07);
+  --glass-bg-2: rgba(255, 255, 255, 0.02);
+  --glass-bg-3: rgba(255, 255, 255, 0.04);
+  --glass-inset: rgba(255, 255, 255, 0.04);
+  --glass-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.45);
+  --input-bg: rgba(0, 0, 0, 0.35);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --btn-glow-shadow: 0 0 24px rgba(34, 211, 238, 0.25);
+  --noise-opacity: 0.035;
+  --orb-a: rgba(6, 182, 212, 0.15);
+  --orb-b: rgba(124, 58, 237, 0.18);
+  --orb-c: rgba(192, 38, 211, 0.12);
+  --mesh-opacity: 0.85;
+  --home-hero-bg: var(--background);
+  --home-card-bg: rgba(24, 24, 27, 0.82);
+  --home-card-border: rgba(255, 255, 255, 0.1);
+  --home-card-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+  --home-eyebrow: #94a3b8;
+  --home-title: #f8fafc;
+  --home-muted: #94a3b8;
+  --home-input-border: rgba(255, 255, 255, 0.12);
+  --home-mic-bg: rgba(167, 139, 250, 0.2);
+  --home-link-bg: rgba(167, 139, 250, 0.15);
+  --home-link-text: #c4b5fd;
+  --gradient-from: #22d3ee;
+  --gradient-mid: #a78bfa;
+  --gradient-to: #f472b6;
 }
 
 html,
@@ -20,70 +92,83 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  transition:
+    background-color 0.35s ease,
+    color 0.25s ease;
 }
 
-/* ── Glass / neo-glass (rounded everywhere) ───────────────────────────── */
+/* ── Glass / neo-glass ─────────────────────────────────────────────────── */
 .glass-panel {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.07) 0%,
-    rgba(255, 255, 255, 0.02) 50%,
-    rgba(255, 255, 255, 0.04) 100%
+    var(--glass-bg-1) 0%,
+    var(--glass-bg-2) 50%,
+    var(--glass-bg-3) 100%
   );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 24px 48px -12px rgba(0, 0, 0, 0.45);
+    0 0 0 1px var(--glass-inset) inset,
+    var(--glass-shadow);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
   border-radius: 9999px;
 }
 
-/* Gradient text */
+/* Gradient text — uses theme accent ramp */
 .gradient-text {
-  background: linear-gradient(120deg, #22d3ee 0%, #a78bfa 45%, #f472b6 100%);
+  background: linear-gradient(
+    120deg,
+    var(--gradient-from) 0%,
+    var(--gradient-mid) 45%,
+    var(--gradient-to) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-text-subtle {
-  background: linear-gradient(90deg, #e4e4e7, #a1a1aa);
+  background: linear-gradient(90deg, var(--foreground), var(--muted));
+  opacity: 0.85;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Inputs — fully rounded (no padding shorthand so utilities / --leading-icon can set inline start) */
+/* Inputs */
 .input-orbit {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 9999px;
   padding-block: 0.65rem;
   padding-inline: 1.25rem;
-  color: white;
+  color: var(--foreground);
   outline: none;
   transition:
     border-color 0.25s ease,
-    box-shadow 0.25s ease;
+    box-shadow 0.25s ease,
+    background-color 0.25s ease;
 }
-/* Icon at left-4 + w-4 (~32px) + gap — do not rely on Tailwind pl-* (overridden by .input-orbit in cascade) */
 .input-orbit--leading-icon {
   padding-inline-start: 2.75rem;
 }
 .input-orbit:focus {
+  border-color: rgba(79, 70, 229, 0.45);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+.dark .input-orbit:focus {
   border-color: rgba(34, 211, 238, 0.5);
   box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
 }
 
-/* Primary CTA — pill + glow */
+/* Primary CTA */
 .btn-glow {
   border-radius: 9999px;
   background: linear-gradient(135deg, #06b6d4, #8b5cf6);
@@ -97,12 +182,15 @@ body {
   transition:
     transform 0.2s ease,
     box-shadow 0.3s ease;
-  box-shadow:
-    0 0 24px rgba(34, 211, 238, 0.25),
-    0 0 48px rgba(139, 92, 246, 0.15);
+  box-shadow: var(--btn-glow-shadow), 0 0 48px rgba(139, 92, 246, 0.12);
 }
 .btn-glow:hover {
   transform: translateY(-1px);
+  box-shadow:
+    0 0 32px rgba(34, 211, 238, 0.35),
+    0 0 64px rgba(139, 92, 246, 0.18);
+}
+.dark .btn-glow:hover {
   box-shadow:
     0 0 32px rgba(34, 211, 238, 0.4),
     0 0 64px rgba(139, 92, 246, 0.2);
@@ -111,7 +199,7 @@ body {
   transform: translateY(0);
 }
 
-/* Calendar: today pulse ring */
+/* Calendar */
 @keyframes today-pulse {
   0%,
   100% {
@@ -125,12 +213,10 @@ body {
       0 0 28px rgba(52, 211, 153, 0.45);
   }
 }
-
 .calendar-day-today {
   animation: today-pulse 2.5s ease-in-out infinite;
 }
 
-/* Shimmer line */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -139,24 +225,35 @@ body {
     background-position: 200% 0;
   }
 }
-
 .shimmer-border {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.12),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(128, 128, 128, 0.15), transparent);
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
 }
+.dark .shimmer-border {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
 
-/* Noise overlay (very subtle) */
+/* Noise */
 .noise-overlay {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  opacity: 0.035;
+  opacity: var(--noise-opacity);
   z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  transition: opacity 0.35s ease;
+}
+
+/* Slow mesh rotation — extra depth behind orbs */
+@keyframes mesh-drift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }

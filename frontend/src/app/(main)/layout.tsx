@@ -6,11 +6,11 @@ import AnimatedBackdrop from "@/components/AnimatedBackdrop";
  */
 export default function MainShellLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-[#050508]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-[var(--background)] transition-colors duration-300">
       <AnimatedBackdrop />
       <div className="noise-overlay" aria-hidden />
       <AppHeader />
-      <div className="relative z-[2] flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-10 box-border">
+      <div className="relative z-[2] mx-auto box-border flex min-h-0 w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 md:px-8 md:py-8">
         {children}
       </div>
     </div>

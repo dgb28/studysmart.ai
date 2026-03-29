@@ -45,7 +45,7 @@ export default function LeaderboardPage() {
         </div>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
           <span className="gradient-text">Leader</span>
-          <span className="text-white">board</span>
+          <span className="text-slate-900 dark:text-white">board</span>
         </h1>
         <p className="text-zinc-500 text-sm mt-3 max-w-2xl leading-relaxed">
           Score blends study time (35%), streak (25%), goals (20%), quizzes (20%) — same formula as your header rank.
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
                       {r.rank}
                     </span>
                   </td>
-                  <td className="p-4 font-medium text-white">{r.display_name}</td>
+                  <td className="p-4 font-medium text-slate-900 dark:text-white">{r.display_name}</td>
                   <td className="p-4 text-cyan-300/90 font-mono tabular-nums">{r.score}</td>
                   <td className="p-4 text-zinc-400 tabular-nums">{r.study_minutes_7d}</td>
                   <td className="p-4 text-amber-300/80 tabular-nums">{r.streak}</td>

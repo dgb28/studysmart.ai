@@ -8,6 +8,7 @@ import { Lock, Mail, LogIn } from "lucide-react";
 import { setToken, api } from "@/lib/api";
 import { HOME_GREETING_FROM_REGISTER_KEY } from "@/lib/homeGreeting";
 import AnimatedBackdrop from "@/components/AnimatedBackdrop";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,28 +33,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-6 bg-[#050508] overflow-hidden">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--background)] p-6 transition-colors">
       <AnimatedBackdrop />
       <div className="noise-overlay z-[1]" aria-hidden />
+      <div className="absolute right-4 top-4 z-[3] md:right-8 md:top-8">
+        <ThemeToggle />
+      </div>
 
       <motion.form
         initial={{ opacity: 0, y: 28, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 26 }}
         onSubmit={submit}
-        className="relative z-[2] glass-panel rounded-[2rem] p-8 md:p-10 w-full max-w-md space-y-6 border border-white/[0.08] shadow-[0_0_80px_rgba(34,211,238,0.08)]"
+        className="relative z-[2] w-full max-w-md space-y-6 rounded-[2rem] border border-[var(--border)] glass-panel p-8 shadow-[0_0_60px_rgba(0,0,0,0.06)] dark:shadow-[0_0_80px_rgba(34,211,238,0.08)] md:p-10"
       >
         <div className="text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", delay: 0.1, stiffness: 400, damping: 18 }}
-            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/25 to-violet-600/35 ring-1 ring-white/10"
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-600/25 ring-1 ring-[var(--border)] dark:from-cyan-500/25 dark:to-violet-600/35 dark:ring-white/10"
           >
-            <LogIn className="w-7 h-7 text-cyan-300" />
+            <LogIn className="h-7 w-7 text-cyan-700 dark:text-cyan-300" />
           </motion.div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Sign in</h1>
-          <p className="text-sm text-zinc-500 mt-2">Enter the orbit</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Sign in</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-zinc-500">Enter the orbit</p>
         </div>
 
         {err && (
@@ -68,7 +72,7 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-4 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <Mail className="pointer-events-none absolute left-4 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-zinc-500" />
             <input
               className="input-orbit input-orbit--leading-icon w-full"
               placeholder="Email"
@@ -78,7 +82,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-4 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <Lock className="pointer-events-none absolute left-4 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-zinc-500" />
             <input
               className="input-orbit input-orbit--leading-icon w-full"
               placeholder="Password"
@@ -98,9 +102,9 @@ export default function LoginPage() {
           Continue
         </motion.button>
 
-        <p className="text-sm text-zinc-500 text-center">
+        <p className="text-center text-sm text-slate-600 dark:text-zinc-500">
           No account?{" "}
-          <Link href="/signup" className="text-cyan-400 hover:text-cyan-300 font-medium">
+          <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-cyan-400 dark:hover:text-cyan-300">
             Create one
           </Link>
         </p>

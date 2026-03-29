@@ -39,6 +39,10 @@ services:
       dockerfile: Dockerfile
     container_name: hackathon-backend
     env_file: .env
+    # Host must be the Compose service name; password special chars handled in app via POSTGRES_* + quote_plus.
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     volumes:
@@ -82,11 +86,16 @@ services:
       dockerfile: Dockerfile
     container_name: hackathon-worker
     env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend:/app
     depends_on:
-      - redis
-      - postgres
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=4
 
   # ── ChromaDB (vector store for RAG) ─────────────────────────────────────────

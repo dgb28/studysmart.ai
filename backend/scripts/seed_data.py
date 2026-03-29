@@ -2,7 +2,8 @@ import asyncio
 import sys
 import os
 import uuid
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Add backend directory to sys.path so we can import from app
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -30,7 +31,6 @@ async def seed_data():
     async with AsyncSessionLocal() as db:
         print("Seeding default user for testing (password: testpass123)...")
         mock_user_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
-        from sqlalchemy.future import select
 
         existing = await db.execute(select(User).where(User.id == mock_user_id))
         if not existing.scalars().first():

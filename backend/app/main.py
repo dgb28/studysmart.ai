@@ -9,8 +9,8 @@ from app.core.config import settings
 from app.api.v1.router import api_router
 from app.db.session import engine
 from app.db.base import Base
+from app.db.ensure_schema import ensure_postgres_schema
 import app.models  # noqa: Load models for metadata sync
-from app.db.base import Base
 
 
 @asynccontextmanager
@@ -18,6 +18,8 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        if "postgresql" in settings.DATABASE_URL:
+            await ensure_postgres_schema(conn)
     print(f"🚀 Starting {settings.APP_NAME} API [{settings.APP_ENV}]")
     yield
     # Shutdown

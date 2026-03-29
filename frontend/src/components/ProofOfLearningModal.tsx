@@ -53,8 +53,8 @@ export default function ProofOfLearningModal({ isOpen, topicTitle, onClose, onSu
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
-      <div className="glass-panel w-full max-w-2xl rounded-3xl p-8 border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300 dark:bg-black/80">
+      <div className="glass-panel flex max-h-[90vh] w-full max-w-2xl flex-col rounded-3xl border border-blue-500/30 p-8 shadow-[0_0_50px_rgba(59,130,246,0.15)]">
         
         <div className="flex items-center gap-4 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
@@ -64,16 +64,19 @@ export default function ProofOfLearningModal({ isOpen, topicTitle, onClose, onSu
             <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
               Proof of Learning
             </h2>
-            <p className="text-gray-400 text-sm">Explain what you learned to unlock the next topic.</p>
+            <p className="text-sm text-slate-600 dark:text-gray-400">
+              Explain what you learned to unlock the next topic.
+            </p>
           </div>
         </div>
 
         {!result ? (
           <>
-            <div className="mb-6 p-6 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
-              <p className="text-lg font-medium text-white">
-                "In your own words, briefly explain the concept of <span className="text-blue-400">'{topicTitle}'</span> in 2-3 sentences."
+            <div className="relative mb-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-slate-100/80 p-6 dark:bg-white/5 dark:border-white/10">
+              <div className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
+              <p className="text-lg font-medium text-slate-900 dark:text-white">
+                &quot;In your own words, briefly explain the concept of{" "}
+                <span className="text-blue-600 dark:text-blue-400">&apos;{topicTitle}&apos;</span> in 2-3 sentences.&quot;
               </p>
             </div>
 
@@ -81,14 +84,14 @@ export default function ProofOfLearningModal({ isOpen, topicTitle, onClose, onSu
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Start typing your explanation here..."
-              className="w-full h-32 bg-black/50 border border-gray-700 focus:border-blue-500 rounded-2xl p-4 text-white placeholder-gray-500 outline-none resize-none transition-colors mb-4"
+              className="mb-4 h-32 w-full resize-none rounded-2xl border border-[var(--border)] bg-white p-4 text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-500 dark:border-gray-700 dark:bg-black/50 dark:text-white dark:placeholder-gray-500"
               disabled={loading}
             />
 
-            <div className="flex justify-between items-center mt-auto">
+            <div className="mt-auto flex items-center justify-between">
               {/* Optional: Add voice dictation UI here. We rely on ElevenLabs coach for purely conversational mode, 
                   but can put a mic button here for Speech-to-Text if needed. */}
-              <button className="text-gray-400 hover:text-white flex items-center gap-2 px-4 py-2 rounded-xl transition-colors">
+              <button className="flex items-center gap-2 rounded-xl px-4 py-2 text-slate-600 transition-colors hover:text-slate-900 dark:text-gray-400 dark:hover:text-white">
                 <Mic className="w-5 h-5" /> Use Voice
               </button>
 
@@ -106,18 +109,18 @@ export default function ProofOfLearningModal({ isOpen, topicTitle, onClose, onSu
             <div className="grid grid-cols-2 gap-4">
               <div className="glass-panel p-4 rounded-2xl border-green-500/20 text-center">
                 <div className="text-3xl font-bold text-green-400 mb-1">{result.correctness}%</div>
-                <div className="text-xs text-gray-400 uppercase tracking-wider">Correctness</div>
+                <div className="text-xs uppercase tracking-wider text-slate-600 dark:text-gray-400">Correctness</div>
               </div>
               <div className="glass-panel p-4 rounded-2xl border-blue-500/20 text-center">
                 <div className="text-3xl font-bold text-blue-400 mb-1">{result.clarity}%</div>
-                <div className="text-xs text-gray-400 uppercase tracking-wider">Clarity</div>
+                <div className="text-xs uppercase tracking-wider text-slate-600 dark:text-gray-400">Clarity</div>
               </div>
             </div>
 
             {result.gaps.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-red-400 font-semibold flex items-center gap-2"><XCircle className="w-4 h-4"/> Knowledge Gaps</h3>
-                <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                <ul className="list-disc space-y-1 pl-5 text-slate-700 dark:text-gray-300">
                   {result.gaps.map((gap, i) => <li key={i}>{gap}</li>)}
                 </ul>
               </div>
@@ -126,14 +129,20 @@ export default function ProofOfLearningModal({ isOpen, topicTitle, onClose, onSu
             {result.recommendations.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-purple-400 font-semibold flex items-center gap-2"><CheckCircle className="w-4 h-4"/> Recommendations</h3>
-                <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                <ul className="list-disc space-y-1 pl-5 text-slate-700 dark:text-gray-300">
                   {result.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
                 </ul>
               </div>
             )}
 
-            <div className="pt-6 mt-6 border-t border-white/10 flex justify-end gap-3">
-              <button onClick={() => {setResult(null); setInputText("");}} className="px-6 py-3 rounded-xl text-gray-300 hover:bg-white/5 font-medium transition-colors">
+            <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-6 dark:border-white/10">
+              <button
+                onClick={() => {
+                  setResult(null);
+                  setInputText("");
+                }}
+                className="rounded-xl px-6 py-3 font-medium text-slate-600 transition-colors hover:bg-black/[0.04] dark:text-gray-300 dark:hover:bg-white/5"
+              >
                 Try Again
               </button>
               <button 

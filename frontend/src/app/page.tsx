@@ -10,7 +10,7 @@ export default function RootPage() {
     router.replace(getToken() ? "/home" : "/login");
   }, [router]);
   return (
-    <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-gray-500">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-slate-500 transition-colors dark:text-zinc-500">
       Redirecting…
     </div>
   );

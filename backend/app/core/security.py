@@ -10,7 +10,11 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except ValueError:
+        # Corrupt or non-bcrypt hash in DB — treat as invalid password, avoid 500 on login
+        return False
 
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:

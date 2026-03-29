@@ -61,20 +61,23 @@ export default function DashboardPage() {
   return (
     <motion.div className="space-y-10" variants={stagger} initial="hidden" animate="show">
       <motion.div variants={fadeUp}>
-        <div className="flex items-center gap-2 text-cyan-400/90 mb-2">
-          <Sparkles className="w-5 h-5" />
+        <div className="mb-2 flex items-center gap-2 text-cyan-600 dark:text-cyan-400/90">
+          <Sparkles className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-[0.2em]">Orbit</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-          <span className="gradient-text">Learning</span> <span className="text-white">paths</span>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+          <span className="gradient-text">Learning</span>{" "}
+          <span className="text-slate-900 dark:text-white">paths</span>
         </h1>
-        <p className="text-zinc-500 mt-3 max-w-xl">Catalog + AI paths · pick up anytime — progress stays saved.</p>
+        <p className="mt-3 max-w-xl text-slate-600 dark:text-zinc-500">
+          Catalog + AI paths · pick up anytime — progress stays saved.
+        </p>
       </motion.div>
 
       {listErr && (
         <motion.div
           variants={fadeUp}
-          className="text-amber-200/90 text-sm glass-panel p-5 rounded-[1.5rem] border border-amber-500/25"
+          className="rounded-[1.5rem] border border-amber-400/30 bg-amber-50/90 p-5 text-sm text-amber-900 glass-panel dark:border-amber-500/25 dark:bg-transparent dark:text-amber-200/90"
         >
           {listErr}
         </motion.div>
@@ -104,9 +107,11 @@ export default function DashboardPage() {
       </motion.form>
 
       {subjects.length === 0 ? (
-        <motion.div variants={fadeUp} className="glass-panel p-12 text-center rounded-[2rem] border border-dashed border-white/10">
-          <p className="text-zinc-500 mb-2">No paths yet.</p>
-          <p className="text-sm text-zinc-600">Generate above or run the seed script for SQL &amp; DSA.</p>
+        <motion.div variants={fadeUp}         className="glass-panel rounded-[2rem] border border-dashed border-slate-300 p-12 text-center dark:border-white/10">
+          <p className="mb-2 text-slate-600 dark:text-zinc-500">No paths yet.</p>
+          <p className="text-sm text-slate-500 dark:text-zinc-600">
+            Generate above or run the seed script for SQL &amp; DSA.
+          </p>
         </motion.div>
       ) : (
         <motion.div

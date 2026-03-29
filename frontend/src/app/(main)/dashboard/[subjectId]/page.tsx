@@ -48,7 +48,7 @@ export default function SubjectPage() {
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
         <Link
           href="/dashboard"
-          className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-400 transition hover:border-white/20 hover:text-white"
+          className="inline-flex items-center rounded-full border border-black/[0.08] bg-black/[0.03] px-4 py-2 text-sm text-slate-600 transition hover:border-black/15 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to paths
@@ -60,16 +60,18 @@ export default function SubjectPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <h1 className="mb-3 bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-4xl font-bold tracking-tight text-transparent">
+        <h1 className="mb-3 bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent dark:from-white dark:via-zinc-100 dark:to-zinc-400">
           {subject.name}
         </h1>
-        <p className="max-w-3xl text-lg text-zinc-400">{subject.description}</p>
+        <p className="max-w-3xl text-lg text-slate-600 dark:text-zinc-400">{subject.description}</p>
       </motion.div>
 
       <div className="space-y-5">
-        <h2 className="border-b border-white/10 pb-2 text-xl font-semibold text-white">Modules</h2>
+        <h2 className="border-b border-[var(--border)] pb-2 text-xl font-semibold text-slate-900 dark:text-white">
+          Modules
+        </h2>
         {subject.modules.length === 0 ? (
-          <p className="italic text-zinc-500">No modules yet.</p>
+          <p className="italic text-slate-500 dark:text-zinc-500">No modules yet.</p>
         ) : (
           <div className="grid gap-4">
             {subject.modules.map((module: any, index: number) => (
@@ -83,13 +85,13 @@ export default function SubjectPage() {
               >
                 <div>
                   <div className="mb-1 flex flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-300">
+                    <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-700 dark:text-cyan-300">
                       Module {index + 1}
                     </span>
-                    <h3 className="text-xl font-semibold text-white">{module.title}</h3>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{module.title}</h3>
                   </div>
-                  <p className="mt-2 text-sm text-zinc-400">{module.description}</p>
-                  <p className="mt-2 text-xs text-zinc-500">{module.topics?.length || 0} topics</p>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">{module.description}</p>
+                  <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">{module.topics?.length || 0} topics</p>
                 </div>
                 <Link
                   href={`/dashboard/${subject.id}/${module.id}`}

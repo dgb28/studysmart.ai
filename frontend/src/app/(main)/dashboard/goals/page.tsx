@@ -92,7 +92,7 @@ export default function GoalsPage() {
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
             <span className="gradient-text">Daily</span>{" "}
-            <span className="text-white">goals</span>
+            <span className="text-slate-900 dark:text-white">goals</span>
           </h1>
           <p className="text-zinc-500 mt-2 max-w-lg">Circular calendar · today glows green · hover for completion %</p>
         </div>
@@ -124,7 +124,7 @@ export default function GoalsPage() {
 
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
         <motion.div variants={item} className="glass-panel rounded-[2rem] p-6 md:p-8">
-          <h2 className="font-semibold text-lg text-white mb-1 flex items-center gap-2">
+          <h2 className="mb-1 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-white">
             <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             This month
           </h2>
@@ -159,17 +159,23 @@ export default function GoalsPage() {
                   whileTap={{ scale: 0.92 }}
                   className={[
                     "relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full text-xs sm:text-sm font-semibold transition-colors duration-200",
-                    "border border-white/[0.08] bg-white/[0.04]",
+                    "border border-black/[0.08] bg-black/[0.03] text-slate-700 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-inherit",
                     isToday
-                      ? "calendar-day-today !bg-emerald-500/25 !border-emerald-400/70 text-emerald-100 ring-2 ring-emerald-400/80 ring-offset-2 ring-offset-[#050508]"
+                      ? "calendar-day-today !bg-emerald-500/25 !border-emerald-400/70 text-emerald-800 ring-2 ring-emerald-400/80 ring-offset-2 ring-offset-[var(--background)] dark:text-emerald-100"
                       : "",
-                    isSelected && !isToday ? "!bg-cyan-500/30 !border-cyan-400/50 text-white shadow-[0_0_24px_rgba(34,211,238,0.25)]" : "",
+                    isSelected && !isToday
+                      ? "!bg-cyan-500/30 !border-cyan-400/50 text-slate-900 shadow-[0_0_24px_rgba(34,211,238,0.25)] dark:text-white"
+                      : "",
                     hoverDay === d.day && !isToday
                       ? "!bg-violet-500/25 !border-violet-400/40 shadow-[0_0_28px_rgba(167,139,250,0.35)] z-10"
                       : "",
                   ].join(" ")}
                 >
-                  {showPct ? <span className="text-[10px] font-bold text-violet-200">{d.percent}%</span> : <span>{d.day.slice(8, 10)}</span>}
+                  {showPct ? (
+                    <span className="text-[10px] font-bold text-violet-700 dark:text-violet-200">{d.percent}%</span>
+                  ) : (
+                    <span>{d.day.slice(8, 10)}</span>
+                  )}
                 </motion.button>
               );
             })}
@@ -187,7 +193,8 @@ export default function GoalsPage() {
               >
                 <p className="text-sm text-zinc-400 mb-4 flex items-center gap-2">
                   <Target className="w-4 h-4 text-cyan-400" />
-                  Goals for <span className="text-white font-medium">{pick}</span>
+                  Goals for{" "}
+                  <span className="font-medium text-slate-900 dark:text-white">{pick}</span>
                 </p>
                 <ul className="space-y-3">
                   {selectedGoals.map((g) => (
@@ -230,7 +237,7 @@ export default function GoalsPage() {
 
         <motion.div variants={item} className="space-y-6">
           <div className="glass-panel rounded-[2rem] p-6 md:p-8">
-            <h2 className="font-semibold text-lg text-white mb-4">Upcoming &amp; open</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Upcoming &amp; open</h2>
             <ul className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
               {goals
                 .filter((g) => g.target_date >= today || !g.completed)

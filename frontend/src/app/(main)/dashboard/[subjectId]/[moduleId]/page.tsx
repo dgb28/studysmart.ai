@@ -123,7 +123,7 @@ export default function StudyPage() {
     try {
       const q = await api<{ questions: QuizQ[] }>(`/topic/${topic.id}/quiz`);
       setQuizQs(q.questions);
-      setAnswers(q.questions.map(() => 0));
+      setAnswers(q.questions.map(() => -1));
     } catch (e) {
       console.error(e);
       alert("Quiz load failed");
@@ -132,6 +132,11 @@ export default function StudyPage() {
 
   async function submitQuiz() {
     if (!topic) return;
+    const unanswered = answers.findIndex((a) => a < 0);
+    if (unanswered !== -1) {
+      alert(`Please answer question ${unanswered + 1} before submitting.`);
+      return;
+    }
     try {
       const res = await api<{
         passed: boolean;
@@ -180,7 +185,9 @@ export default function StudyPage() {
         animate={{ opacity: 1, x: 0 }}
         className="glass-panel order-2 h-fit w-full shrink-0 rounded-[2rem] p-5 lg:order-1 lg:w-60"
       >
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Leaderboard</p>
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-zinc-500">
+          Leaderboard
+        </p>
         <ul className="max-h-[50vh] space-y-2 overflow-y-auto text-xs">
           {board.map((r, i) => (
             <motion.li
@@ -188,13 +195,13 @@ export default function StudyPage() {
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.03 }}
-              className="flex items-center justify-between gap-2 rounded-full border border-white/5 bg-white/[0.03] px-3 py-2"
+              className="flex items-center justify-between gap-2 rounded-full border border-black/[0.06] bg-black/[0.02] px-3 py-2 dark:border-white/5 dark:bg-white/[0.03]"
             >
-              <span className="truncate text-zinc-300">
+              <span className="truncate text-slate-700 dark:text-zinc-300">
                 <span className="mr-1.5 font-mono text-cyan-400/90">{r.rank}.</span>
                 {r.display_name}
               </span>
-              <span className="shrink-0 font-medium text-zinc-500">{r.score}</span>
+              <span className="shrink-0 font-medium text-slate-500 dark:text-zinc-500">{r.score}</span>
             </motion.li>
           ))}
         </ul>
@@ -208,15 +215,15 @@ export default function StudyPage() {
         >
           <Link
             href={`/dashboard/${subjectId}`}
-            className="mb-4 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-400 transition hover:border-white/20 hover:text-white"
+            className="mb-4 inline-flex items-center rounded-full border border-black/[0.08] bg-black/[0.03] px-4 py-2 text-sm text-slate-600 transition hover:border-black/15 hover:text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Modules
           </Link>
-          <h2 className="bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-xl font-bold text-transparent">
+          <h2 className="bg-gradient-to-r from-slate-900 to-slate-500 bg-clip-text text-xl font-bold text-transparent dark:from-white dark:to-zinc-400">
             {module.title}
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-zinc-500">
             Topic {idx + 1} / {topics.length}
           </p>
           <div className="mt-5 flex flex-col gap-2">
@@ -227,8 +234,8 @@ export default function StudyPage() {
                 onClick={() => setIdx(i)}
                 className={`rounded-full px-4 py-2.5 text-left text-sm transition ${
                   i === idx
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-600/20 font-medium text-white ring-1 ring-cyan-500/40"
-                    : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-600/20 font-medium text-slate-900 ring-1 ring-cyan-500/40 dark:text-white"
+                    : "text-slate-600 hover:bg-black/[0.04] hover:text-slate-900 dark:text-zinc-500 dark:hover:bg-white/5 dark:hover:text-zinc-300"
                 }`}
               >
                 {i + 1}. {t.title}
@@ -242,18 +249,18 @@ export default function StudyPage() {
           className="glass-panel relative flex-1 rounded-[2rem] p-8"
         >
           {!topic ? (
-            <p className="text-zinc-500">No topics.</p>
+            <p className="text-slate-500 dark:text-zinc-500">No topics.</p>
           ) : phase === "locked" || !unlocked ? (
-            <p className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-200">
+            <p className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-900 dark:text-amber-200">
               Complete the previous topic&apos;s quiz to unlock this one.
             </p>
           ) : (
             <>
-              <h1 className="mb-4 text-2xl font-bold text-white">{topic.title}</h1>
+              <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{topic.title}</h1>
 
               {!hasContent && (
                 <div className="mb-6">
-                  <p className="mb-3 text-sm text-zinc-400">
+                  <p className="mb-3 text-sm text-slate-600 dark:text-zinc-400">
                     No lesson text yet. Generate from AI (uses your study material context).
                   </p>
                   <button
@@ -274,20 +281,20 @@ export default function StudyPage() {
                   <button
                     type="button"
                     onClick={nextTopic}
-                    className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-medium transition hover:bg-white/15"
+                    className="rounded-full border border-black/10 bg-black/[0.04] px-6 py-3 text-sm font-medium text-slate-800 transition hover:bg-black/[0.07] dark:border-white/15 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15"
                   >
                     {idx < topics.length - 1 ? "Next topic" : "Back to subject"}
                   </button>
                 </div>
               ) : phase === "quiz" && quizQs.length > 0 && !result ? (
                 <div className="space-y-6">
-                  <p className="text-sm text-zinc-400">10 questions · need 70% to continue.</p>
+                  <p className="text-sm text-slate-600 dark:text-zinc-400">10 questions · need 70% to continue.</p>
                   {quizQs.map((q, qi) => (
                     <div
                       key={q.index}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm"
+                      className="rounded-[1.5rem] border border-[var(--border)] bg-black/[0.02] p-5 backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.03]"
                     >
-                      <p className="mb-3 font-medium text-zinc-100">
+                      <p className="mb-3 font-medium text-slate-800 dark:text-zinc-100">
                         {qi + 1}. {q.question}
                       </p>
                       <div className="space-y-2">
@@ -296,8 +303,8 @@ export default function StudyPage() {
                             key={oi}
                             className={`flex cursor-pointer items-center gap-3 rounded-full border px-4 py-2.5 text-sm transition ${
                               answers[qi] === oi
-                                ? "border-cyan-500/50 bg-cyan-500/10 text-white"
-                                : "border-white/10 hover:border-white/20 hover:bg-white/5"
+                                ? "border-cyan-500/50 bg-cyan-500/10 text-slate-900 dark:text-white"
+                                : "border-black/10 hover:border-black/20 hover:bg-black/[0.03] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/5"
                             }`}
                           >
                             <input
@@ -320,7 +327,8 @@ export default function StudyPage() {
                   <button
                     type="button"
                     onClick={submitQuiz}
-                    className="btn-glow rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-cyan-500/25"
+                    disabled={answers.some((a) => a < 0)}
+                    className="btn-glow rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Submit
                   </button>
@@ -336,16 +344,16 @@ export default function StudyPage() {
                   </p>
                   {result.wrong_explanations.length > 0 && (
                     <div className="space-y-3 text-sm">
-                      <p className="text-zinc-400">Review:</p>
+                      <p className="text-slate-600 dark:text-zinc-400">Review:</p>
                       {result.wrong_explanations.map((w) => (
                         <div
                           key={w.index}
-                          className="rounded-2xl border border-white/10 bg-black/30 p-4"
+                          className="rounded-2xl border border-[var(--border)] bg-slate-100/80 p-4 dark:border-white/10 dark:bg-black/30"
                         >
-                          <p className="text-red-300">Q{w.index + 1}</p>
-                          <p className="text-zinc-300">Your answer: {w.your_answer}</p>
-                          <p className="text-zinc-300">Correct: {w.correct_answer}</p>
-                          <p className="mt-1 text-zinc-500">{w.explanation}</p>
+                          <p className="text-red-600 dark:text-red-300">Q{w.index + 1}</p>
+                          <p className="text-slate-700 dark:text-zinc-300">Your answer: {w.your_answer}</p>
+                          <p className="text-slate-700 dark:text-zinc-300">Correct: {w.correct_answer}</p>
+                          <p className="mt-1 text-slate-600 dark:text-zinc-500">{w.explanation}</p>
                         </div>
                       ))}
                     </div>
@@ -363,7 +371,7 @@ export default function StudyPage() {
                       type="button"
                       onClick={() => {
                         setResult(null);
-                        setAnswers(quizQs.map(() => 0));
+                        setAnswers(quizQs.map(() => -1));
                       }}
                       className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-amber-500/20"
                     >
@@ -373,7 +381,7 @@ export default function StudyPage() {
                 </div>
               ) : hasContent ? (
                 <>
-                  <div className="prose prose-invert mb-8 max-w-none whitespace-pre-wrap text-zinc-300">
+                  <div className="prose prose-slate dark:prose-invert mb-8 max-w-none whitespace-pre-wrap text-slate-700 dark:text-zinc-300">
                     {topic.content}
                   </div>
                   <button

@@ -79,7 +79,8 @@ export default function AnalyticsPage() {
           <span className="text-xs font-semibold uppercase tracking-[0.2em]">Signal</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-          <span className="gradient-text">Learning</span> <span className="text-white">analysis</span>
+          <span className="gradient-text">Learning</span>{" "}
+          <span className="text-slate-900 dark:text-white">analysis</span>
         </h1>
         <p className="text-zinc-500 mt-2 max-w-xl">Timer, goals, and topic progress — distilled.</p>
         <motion.p
@@ -106,7 +107,7 @@ export default function AnalyticsPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 mb-4">
               <c.icon className="w-6 h-6 text-cyan-300" />
             </div>
-            <div className="text-3xl font-bold text-white">{c.value}</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">{c.value}</div>
             <div className="text-sm text-zinc-500 mt-1">{c.label}</div>
           </motion.div>
         ))}
@@ -118,7 +119,7 @@ export default function AnalyticsPage() {
         transition={{ delay: 0.2 }}
         className="glass-panel p-6 md:p-8 rounded-[2rem]"
       >
-        <h3 className="text-lg font-semibold text-white mb-2">Average focus block</h3>
+        <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Average focus block</h3>
         <p className="text-sm text-zinc-500">
           This week: <strong className="text-cyan-300">{data.avg_session_minutes_this_week} min</strong> per segment · Last week:{" "}
           <strong className="text-violet-300">{data.avg_session_minutes_last_week} min</strong>
@@ -131,7 +132,7 @@ export default function AnalyticsPage() {
         transition={{ delay: 0.28 }}
         className="glass-panel p-6 md:p-10 rounded-[2rem] h-[420px]"
       >
-        <h3 className="text-xl font-semibold text-white mb-6">Timer minutes · 7 days</h3>
+        <h3 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">Timer minutes · 7 days</h3>
         <ResponsiveContainer width="100%" height="85%">
           <BarChart data={data.daily_focus} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
