@@ -1,7 +1,6 @@
 import sys
 try:
-    from app.core.config import settings
     print("Settings loaded successfully!")
-except Exception as e:
+except Exception:
     import traceback
     traceback.print_exc(file=sys.stdout)

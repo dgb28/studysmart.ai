@@ -25,7 +25,7 @@ async def get_current_user(
         uid = uuid.UUID(sub)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    result = await db.execute(select(User).where(User.id == uid, User.is_active == True))
+    result = await db.execute(select(User).where(User.id == uid, User.is_active.is_(True)))
     user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")

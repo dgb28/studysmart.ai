@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Plus, Trash2, Check, RotateCcw, Target } from "lucide-react";
@@ -48,7 +48,7 @@ export default function GoalsPage() {
   const [hoverDay, setHoverDay] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!getToken()) {
       router.replace("/login");
       return;
@@ -62,7 +62,7 @@ export default function GoalsPage() {
       `/goals/calendar?from_date=${from.toISOString().slice(0, 10)}&to_date=${to.toISOString().slice(0, 10)}`,
     );
     setCal(c);
-  }
+  }, [router]);
 
   useEffect(() => {
     const m = sessionStorage.getItem("goals_flash");
@@ -82,7 +82,7 @@ export default function GoalsPage() {
     load().catch((e) => {
       if (isUnauthorized(e)) router.replace("/login");
     });
-  }, [router]);
+  }, [load, router]);
 
   async function addGoal(e: React.FormEvent) {
     e.preventDefault();

@@ -85,9 +85,17 @@ export default function HomePage() {
   }
 
   function startVoice() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
+    type Rec = {
+      lang: string;
+      onresult: ((ev: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null;
+      start: () => void;
+    };
+    type RecCtor = new () => Rec;
+    const w = window as Window & {
+      webkitSpeechRecognition?: RecCtor;
+      SpeechRecognition?: RecCtor;
+    };
+    const SR = w.webkitSpeechRecognition ?? w.SpeechRecognition;
     if (!SR) {
       alert("Speech recognition not supported in this browser");
       return;
