@@ -146,19 +146,19 @@ export default function HomePage() {
           </div>
 
           <p
-            className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-[11px]"
+            className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.18em] sm:mb-3 sm:text-sm md:text-base"
             style={{ color: "var(--home-eyebrow)" }}
           >
             {eyebrow}
           </p>
           <h1
-            className="text-center text-2xl font-bold tracking-tight sm:text-3xl"
+            className="text-center text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
             style={{ color: "var(--home-title)" }}
           >
             Hi, {name}
           </h1>
           <p
-            className="mx-auto mt-2 max-w-xl text-center text-sm text-balance sm:mt-3 sm:text-base"
+            className="mx-auto mt-3 max-w-2xl text-center text-balance text-lg leading-relaxed sm:mt-4 sm:text-xl md:text-2xl md:leading-relaxed"
             style={{ color: "var(--home-muted)" }}
           >
             {question}
@@ -205,16 +205,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-wrap justify-center gap-2 px-4 sm:gap-3">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="flex shrink-0 flex-wrap justify-center gap-3 px-4 sm:gap-4 md:gap-5"
+      >
         {[
           { href: "/dashboard", label: "Learning paths" },
-          { href: "/dashboard/goals", label: "Daily goals" },
+          { href: "/dashboard/goals", label: "Daily Progress" },
           { href: "/dashboard/analytics", label: "Analysis" },
         ].map((l) => (
           <Link
             key={l.href}
             href={l.href}
-            className="rounded-full px-5 py-2.5 text-sm font-medium transition hover:opacity-90"
+            className="min-w-[11.5rem] rounded-2xl px-7 py-3.5 text-center text-base font-semibold transition hover:opacity-90 sm:min-w-[12.5rem] sm:px-9 sm:py-4 sm:text-lg md:min-w-[13.5rem] md:px-10 md:py-[1.125rem] md:text-xl"
             style={{
               backgroundColor: "var(--home-link-bg)",
               color: "var(--home-link-text)",
@@ -223,7 +228,7 @@ export default function HomePage() {
             {l.label}
           </Link>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }
