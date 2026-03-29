@@ -21,17 +21,10 @@ export default function VoiceCoach({
   context,
   onActiveChange,
 }: VoiceCoachProps) {
-  const [agentId, setAgentId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const envAgentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
-    if (envAgentId) {
-      setAgentId(envAgentId);
-    }
-  }, []);
+  const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID?.trim() || "";
 
   const { isActive, status, messages, toggleConversation, setMessages } =
     useVoiceConversation({
@@ -59,7 +52,27 @@ export default function VoiceCoach({
     }
   }, [messages]);
 
-  if (!agentId) return null;
+  const isConfigured = Boolean(agentId);
+
+  useEffect(() => {
+    if (
+      isConfigured &&
+      voiceError?.includes("AI Coach is not configured")
+    ) {
+      setVoiceError(null);
+    }
+  }, [isConfigured, voiceError]);
+
+  const handleToggle = () => {
+    if (!isConfigured) {
+      setVoiceError(
+        "AI Coach is not configured. Add NEXT_PUBLIC_ELEVENLABS_AGENT_ID in your frontend environment and restart the app.",
+      );
+      setIsExpanded(true);
+      return;
+    }
+    toggleConversation();
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -159,25 +172,42 @@ export default function VoiceCoach({
         )}
 
         <button
-          onClick={toggleConversation}
-          className={`group relative p-5 rounded-2xl transition-all duration-500 shadow-xl flex items-center justify-center ${
-            isActive
-              ? "bg-red-500 shadow-red-500/40 hover:scale-105"
-              : "bg-blue-600 shadow-blue-500/40 hover:scale-110"
+          onClick={handleToggle}
+          className={`group relative flex items-center justify-center rounded-2xl p-5 shadow-xl transition-all duration-500 ${
+            isConfigured
+              ? isActive
+                ? "bg-red-500 shadow-red-500/40 hover:scale-105"
+                : "bg-blue-600 shadow-blue-500/40 hover:scale-110"
+              : "cursor-not-allowed bg-amber-500 shadow-amber-500/30"
           }`}
+          title={
+            isConfigured
+              ? isActive
+                ? "Stop AI Session"
+                : "Consult AI Coach"
+              : "AI Coach not configured"
+          }
         >
-          {isActive ? (
-            <>
-              <div className="absolute inset-0 rounded-2xl bg-red-400 animate-ping opacity-20" />
-              <MicOff className="w-6 h-6 text-white relative z-10" />
-            </>
+          {isConfigured ? (
+            isActive ? (
+              <>
+                <div className="absolute inset-0 rounded-2xl bg-red-400 animate-ping opacity-20" />
+                <MicOff className="w-6 h-6 text-white relative z-10" />
+              </>
+            ) : (
+              <Mic className="w-6 h-6 text-white group-hover:animate-pulse" />
+            )
           ) : (
-            <Mic className="w-6 h-6 text-white group-hover:animate-pulse" />
+            <MicOff className="h-6 w-6 text-white" />
           )}
 
           {/* Tooltip */}
           <span className="pointer-events-none absolute right-full mr-4 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-black/80">
-            {isActive ? "Stop AI Session" : "Consult AI Coach"}
+            {isConfigured
+              ? isActive
+                ? "Stop AI Session"
+                : "Consult AI Coach"
+              : "AI Coach setup required"}
           </span>
         </button>
       </div>

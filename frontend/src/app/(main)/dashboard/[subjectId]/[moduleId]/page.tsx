@@ -586,7 +586,7 @@ export default function StudyPage() {
         </motion.div>
       </div>
 
-      {topic && unlocked && hasContent && (
+      {topic && unlocked && phase === "content" && (
         <VoiceCoach
           key={topic.id}
           onActiveChange={setIsVoiceActive}
