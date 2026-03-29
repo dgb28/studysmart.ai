@@ -50,13 +50,25 @@ export default function HomePage() {
     if (!text.trim() || busy) return;
     setBusy(true);
     try {
-      const res = await api<{ target: string; learning_topic: string | null }>("/learning/home/classify", {
+      const res = await api<{
+        target: string;
+        learning_topic: string | null;
+        goal?: { id: string; title: string; target_date: string; completed: boolean } | null;
+      }>("/learning/home/classify", {
         method: "POST",
         json: { text: text.trim() },
       });
-      if (res.target === "daily_goals") router.push("/dashboard/goals");
-      else if (res.target === "analysis") router.push("/dashboard/analytics");
-      else {
+      if (res.target === "daily_goals") {
+        if (res.goal) {
+          sessionStorage.setItem(
+            "goals_flash",
+            `Added “${res.goal.title}” for ${res.goal.target_date}`
+          );
+        }
+        router.push("/dashboard/goals");
+      } else if (res.target === "analysis") {
+        router.push("/dashboard/analytics");
+      } else {
         if (res.learning_topic && res.learning_topic.length > 1) {
           await api("/learning/paths/generate", {
             method: "POST",
@@ -92,11 +104,7 @@ export default function HomePage() {
   if (!me && !loadErr)
     return (
       <div className="flex min-h-[50vh] flex-1 items-center justify-center py-24">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-          className="h-10 w-10 rounded-full border-2 border-indigo-400/40 border-t-indigo-600 dark:border-cyan-400/30 dark:border-t-cyan-400"
-        />
+        <div className="h-10 w-10 animate-pulse rounded-full bg-indigo-400/25 dark:bg-cyan-400/20" aria-hidden />
       </div>
     );
   if (loadErr)
@@ -117,12 +125,7 @@ export default function HomePage() {
       className="-mx-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-4 overflow-hidden py-1 sm:-mx-6 md:-mx-8"
       style={{ backgroundColor: "var(--home-hero-bg)" }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 280, damping: 28 }}
-        className="flex w-full max-w-3xl flex-col justify-center px-4 sm:px-6"
-      >
+      <div className="flex w-full max-w-3xl flex-col justify-center px-4 sm:px-6">
         <div
           className="mx-auto w-full rounded-[1.5rem] border p-6 shadow-[var(--home-card-shadow)] sm:p-8 md:rounded-[1.75rem]"
           style={{
@@ -183,7 +186,7 @@ export default function HomePage() {
               <input
                 className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none sm:py-2 sm:text-base"
                 style={{ color: "var(--foreground)" }}
-                placeholder="Goals, analytics, or “I want to learn DBMS”…"
+                placeholder="e.g. Meeting at 6pm today, or I want to learn DBMS…"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               />
@@ -200,14 +203,9 @@ export default function HomePage() {
             </motion.button>
           </form>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15 }}
-        className="flex shrink-0 flex-wrap justify-center gap-2 px-4 sm:gap-3"
-      >
+      <div className="flex shrink-0 flex-wrap justify-center gap-2 px-4 sm:gap-3">
         {[
           { href: "/dashboard", label: "Learning paths" },
           { href: "/dashboard/goals", label: "Daily goals" },
@@ -225,7 +223,7 @@ export default function HomePage() {
             {l.label}
           </Link>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

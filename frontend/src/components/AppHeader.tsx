@@ -7,6 +7,7 @@ import { BrainCircuit, Flame, Trophy, Play, Pause } from "lucide-react";
 import { JetBrains_Mono } from "next/font/google";
 import { api, getToken, setToken } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useFocusInteractionTracker } from "@/hooks/useFocusInteractionTracker";
 
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "600"] });
 
@@ -20,12 +21,21 @@ export default function AppHeader() {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [startedAt, setStartedAt] = useState<string | null>(null);
-  const [rank, setRank] = useState<{ rank: number; total_users: number; streak: number } | null>(null);
+  const [rank, setRank] = useState<{
+    rank: number;
+    total_users: number;
+    streak: number;
+  } | null>(null);
+
+  const { reset: resetInteraction, getSnapshot: getInteractionSnapshot } =
+    useFocusInteractionTracker(running);
 
   const syncTimer = useCallback(async () => {
     if (!getToken()) return;
     try {
-      const s = await api<{ running: boolean; started_at: string | null }>("/timer/state");
+      const s = await api<{ running: boolean; started_at: string | null }>(
+        "/timer/state",
+      );
       setRunning(s.running);
       setStartedAt(s.started_at);
     } catch {
@@ -36,7 +46,11 @@ export default function AppHeader() {
   const syncRank = useCallback(async () => {
     if (!getToken()) return;
     try {
-      const r = await api<{ rank: number; total_users: number; streak: number }>("/leaderboard/me");
+      const r = await api<{
+        rank: number;
+        total_users: number;
+        streak: number;
+      }>("/leaderboard/me");
       setRank(r);
     } catch {
       /* ignore */
@@ -50,7 +64,14 @@ export default function AppHeader() {
       syncTimer();
       syncRank();
     }, 30000);
-    return () => clearInterval(i);
+    const onSync = () => {
+      void syncTimer();
+    };
+    window.addEventListener("sp-focus-timer-sync", onSync);
+    return () => {
+      clearInterval(i);
+      window.removeEventListener("sp-focus-timer-sync", onSync);
+    };
   }, [syncTimer, syncRank]);
 
   useEffect(() => {
@@ -65,16 +86,77 @@ export default function AppHeader() {
     return () => clearInterval(id);
   }, [running, startedAt]);
 
-  async function toggleTimer() {
+  const pauseFocus = useCallback(async () => {
+    if (!running) return;
     try {
-      const action = running ? "pause" : "start";
-      const s = await api<{ running: boolean; started_at: string | null }>("/timer/action", {
-        method: "POST",
-        json: { action },
-      });
+      const snap = getInteractionSnapshot();
+      const s = await api<{ running: boolean; started_at: string | null }>(
+        "/timer/action",
+        {
+          method: "POST",
+          json: {
+            action: "pause",
+            tab_changes: snap.tab_changes,
+            keyboard_inputs: snap.keyboard_inputs,
+            window_blurs: snap.window_blurs,
+            mouse_movements: snap.mouse_movements,
+          },
+        },
+      );
+      resetInteraction();
       setRunning(s.running);
       setStartedAt(s.started_at);
-      if (action === "pause") syncRank();
+      syncRank();
+      window.dispatchEvent(new CustomEvent("sp-focus-timer-sync"));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [running, getInteractionSnapshot, resetInteraction, syncRank]);
+
+  useEffect(() => {
+    const onPauseForAnalytics = () => {
+      void pauseFocus();
+    };
+    window.addEventListener("sp-pause-focus-for-analytics", onPauseForAnalytics);
+    return () => {
+      window.removeEventListener("sp-pause-focus-for-analytics", onPauseForAnalytics);
+    };
+  }, [pauseFocus]);
+
+  async function toggleTimer() {
+    try {
+      if (running) {
+        await pauseFocus();
+        return;
+      }
+
+      resetInteraction();
+      let topic_id: string | undefined;
+      try {
+        const t = sessionStorage.getItem("sp_focus_topic_id");
+        if (
+          t &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            t,
+          )
+        ) {
+          topic_id = t;
+        }
+      } catch {
+        /* ignore */
+      }
+      const s = await api<{ running: boolean; started_at: string | null }>(
+        "/timer/action",
+        {
+          method: "POST",
+          json: {
+            action: "start",
+            ...(topic_id ? { topic_id } : {}),
+          },
+        },
+      );
+      setRunning(s.running);
+      setStartedAt(s.started_at);
     } catch (e) {
       console.error(e);
     }
@@ -119,12 +201,20 @@ export default function AppHeader() {
         >
           <span
             className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              running ? "bg-emerald-500 text-white" : "bg-slate-200 text-cyan-700 dark:bg-white/10 dark:text-cyan-300"
+              running
+                ? "bg-emerald-500 text-white"
+                : "bg-slate-200 text-cyan-700 dark:bg-white/10 dark:text-cyan-300"
             }`}
           >
-            {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 pl-0.5" />}
+            {running ? (
+              <Pause className="w-4 h-4" />
+            ) : (
+              <Play className="w-4 h-4 pl-0.5" />
+            )}
           </span>
-          <span className={`${mono.className} tabular-nums text-slate-800 dark:text-zinc-100`}>
+          <span
+            className={`${mono.className} tabular-nums text-slate-800 dark:text-zinc-100`}
+          >
             {running || elapsed ? `${mm}:${ss}` : "Focus"}
           </span>
         </motion.button>
@@ -136,7 +226,9 @@ export default function AppHeader() {
             title="Streak"
           >
             <Flame className="w-4 h-4" />
-            <span className="font-semibold tabular-nums">{rank?.streak ?? "—"}</span>
+            <span className="font-semibold tabular-nums">
+              {rank?.streak ?? "—"}
+            </span>
           </Link>
         </motion.div>
 
@@ -159,7 +251,13 @@ export default function AppHeader() {
           { href: "/dashboard/analytics", label: "Analysis" },
           { href: "/home", label: "Home" },
         ].map((item) => (
-          <motion.div key={item.href} variants={navItem} initial="rest" whileHover="hover" whileTap="tap">
+          <motion.div
+            key={item.href}
+            variants={navItem}
+            initial="rest"
+            whileHover="hover"
+            whileTap="tap"
+          >
             <Link
               href={item.href}
               className="rounded-full px-3 py-1.5 text-sm text-slate-600 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"

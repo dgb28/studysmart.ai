@@ -17,7 +17,11 @@ const stagger = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 380, damping: 28 },
+  },
 };
 
 export default function DashboardPage() {
@@ -37,7 +41,10 @@ export default function DashboardPage() {
       .then(setSubjects)
       .catch((e) => {
         if (isUnauthorized(e)) router.replace("/login");
-        else setListErr("Could not load learning paths. API error or network — you are still logged in.");
+        else
+          setListErr(
+            "Could not load learning paths. API error or network — you are still logged in.",
+          );
       });
   }, [router]);
 
@@ -46,7 +53,10 @@ export default function DashboardPage() {
     if (!pathName.trim() || busy) return;
     setBusy(true);
     try {
-      await api("/learning/paths/generate", { method: "POST", json: { topic_name: pathName.trim() } });
+      await api("/learning/paths/generate", {
+        method: "POST",
+        json: { topic_name: pathName.trim() },
+      });
       setPathName("");
       const list = await api<any[]>("/subjects/");
       setSubjects(list);
@@ -59,18 +69,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <motion.div className="space-y-10" variants={stagger} initial="hidden" animate="show">
+    <motion.div
+      className="space-y-10"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
       <motion.div variants={fadeUp}>
         <div className="mb-2 flex items-center gap-2 text-cyan-600 dark:text-cyan-400/90">
           <Sparkles className="h-5 w-5" />
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">Orbit</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+            Orbit
+          </span>
         </div>
         <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
           <span className="gradient-text">Learning</span>{" "}
           <span className="text-slate-900 dark:text-white">paths</span>
         </h1>
         <p className="mt-3 max-w-xl text-slate-600 dark:text-zinc-500">
-          Catalog + AI paths · pick up anytime — progress stays saved.
+          AI-generated paths · pick up anytime — progress stays saved.
         </p>
       </motion.div>
 
@@ -107,10 +124,15 @@ export default function DashboardPage() {
       </motion.form>
 
       {subjects.length === 0 ? (
-        <motion.div variants={fadeUp}         className="glass-panel rounded-[2rem] border border-dashed border-slate-300 p-12 text-center dark:border-white/10">
-          <p className="mb-2 text-slate-600 dark:text-zinc-500">No paths yet.</p>
+        <motion.div
+          variants={fadeUp}
+          className="glass-panel rounded-[2rem] border border-dashed border-slate-300 p-12 text-center dark:border-white/10"
+        >
+          <p className="mb-2 text-slate-600 dark:text-zinc-500">
+            No paths yet.
+          </p>
           <p className="text-sm text-slate-500 dark:text-zinc-600">
-            Generate above or run the seed script for SQL &amp; DSA.
+            Use the form above to create your first path.
           </p>
         </motion.div>
       ) : (
@@ -123,7 +145,12 @@ export default function DashboardPage() {
               key={subject.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06, type: "spring", stiffness: 300, damping: 24 }}
+              transition={{
+                delay: i * 0.06,
+                type: "spring",
+                stiffness: 300,
+                damping: 24,
+              }}
             >
               <SubjectCard subject={subject} />
             </motion.div>
