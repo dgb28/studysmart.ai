@@ -1,103 +1,107 @@
-# 🚀 Hackathon Project
+# 🧠 StudySmart.ai 🚀
 
-> **Unified Learning Dashboard**: A glassmorphic interface for tracking progress.
-- **Interactive AI Voice Coach**: Real-time synchronized chat and voice coaching powered by ElevenLabs SDK.
-- **Context-Aware Modules**: The AI knows exactly what topic you are studying and locks its knowledge to that module.
-- **Proof of Learning**: Automated micro-challenges to verify student understanding before advancing.
-- **Inactivity Detection**: Smart timers that pause while you are communicating with the AI.
-es, RAG support, and multi-cloud scalability (AWS + GCP) baked in from day one.
+> **A Next-Generation Context-Aware Learning Platform for the Hackathon**
+
+StudySmart.ai is a comprehensive, glassmorphic learning dashboard that integrates real-time AI voice coaching, context-aware AI interactions, and highly granular study analytics to optimize focused learning sessions.
 
 ---
 
-## 🗂️ Project Structure
+## ✨ Key Features
 
-```
-hackathon-project/
-├── backend/          # FastAPI — REST API, auth, business logic
-├── frontend/         # Next.js 14 — UI dashboard & user portal
-├── agents/           # AI agent pipelines — RAG, chains, tools
-├── infra/            # Infrastructure as Code (Terraform + K8s)
-│   ├── terraform/
-│   │   ├── aws/      # EKS, RDS, S3, Secrets Manager, ALB
-│   │   ├── gcp/      # GKE, Cloud Run, Cloud SQL, GCS
-│   │   └── shared/   # Cross-cloud VPN / peering
-│   ├── k8s/          # Kubernetes manifests
-│   └── docker/       # Base Dockerfiles
-├── scripts/          # Dev scripts: setup, seed, deploy
-├── docs/             # Architecture, decisions, runbooks
-└── .github/          # CI/CD workflows
-```
+- **🗣️ Interactive AI Voice Coach**
+  Real-time synchronized chat and voice coaching powered by the ElevenLabs SDK. Receive instant verbal feedback and explanations while studying.
+  
+- **🎯 Context-Aware Modules**
+  The AI dynamically understands the exact topic and module you are currently studying. Its knowledge base is locked exclusively to your current context to prevent hallucinations and keep responses relevant.
 
----
+- **📈 Granular Interaction Analytics Hub**
+  Track your actual study footprint rather than just time on a page. Our built-in tracking engine captures:
+  - **Focus Time**: Precise minute-level tracking of active studying.
+  - **Keystrokes**: Quantifying active engagement and answering.
+  - **Tab Switches**: Monitoring context-switching to help reduce distractions.
+  - **Window Blurs**: Detecting background idle time.
+  Includes beautiful, interactive *Weekly* and *Monthly* vertical bar charts demonstrating a rolling 7-day average of all tracked metrics metrics.
+  
+- **⏳ Smart Inactivity Detection**
+  Timers dynamically pause while you communicate with the AI and resume when you return to active module engagement.
 
-## ⚡ Quick Start
-
-### Prerequisites
-- Docker & Docker Compose
-- Node.js 20+
-- Python 3.11+
-- AWS CLI v2 (configured)
-- gcloud CLI (configured)
-- Terraform 1.7+
-
-### 1. Clone & Bootstrap
-```bash
-git clone <repo-url> hackathon-project
-cd hackathon-project
-cp .env.example .env          # Fill in your values
-make setup                    # Install all deps
-make dev                      # Start all services
-```
-
-### 2. If you are using an AI Agent (Cursor / Antigravity / GPT)
-> Open `AGENT_SETUP.md` and follow the instructions — your agent will auto-configure the environment.
+- **🛡️ Proof of Learning**
+  Automated micro-challenges verify student understanding before permitting advancement to the next topic.
 
 ---
 
-## 🤖 AI Agent Collaboration
+## 🛠️ Tech Stack
 
-See [`docs/COLLABORATION.md`](docs/COLLABORATION.md) for:
-- How to parallelize work across agents
-- Context-sharing conventions (shared context files)
-- Who owns which module
+### Frontend
+- **Framework**: Next.js 14 (App Router) & React
+- **Styling**: Tailwind CSS & Framer Motion (Glassmorphic aesthetics)
+- **Data Visualization**: Recharts (Interactive Analytics Dashboard)
 
----
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **AI Integration**: ElevenLabs SDK & LLM Chains
+- **Architecture**: REST API with strict CORS and JWT Authentication
 
-## ☁️ Multi-Cloud Infrastructure
-
-| Cloud | Services Used |
-|---|---|
-| **AWS** | EKS (K8s), RDS (Postgres), S3, ALB, Secrets Manager, CloudWatch |
-| **GCP** | GKE (K8s), Cloud SQL, GCS, Cloud Run, Secret Manager, Cloud Logging |
-| **Shared** | IPSec VPN tunnel between AWS VPC and GCP VPC, cross-cloud service mesh |
-
-See [`infra/`](infra/) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-
----
-
-## 📖 Documentation
-
-| File | Purpose |
-|---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System architecture diagrams |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture decision records |
-| [`docs/ENV_SETUP.md`](docs/ENV_SETUP.md) | Environment & cloud CLI setup |
-| [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) | Current bugs & workarounds |
-| [`docs/PRODUCTION_CHECKLIST.md`](docs/PRODUCTION_CHECKLIST.md) | Pre-deploy checklist |
-| [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Common errors & fixes |
-| [`docs/COLLABORATION.md`](docs/COLLABORATION.md) | AI agent teamwork guide |
+### Infrastructure & DevOps
+- **Containerization**: Docker & Docker Compose
+- **Orchestration**: Kubernetes manifests via robust Makefile setups
+- **Multi-Cloud Scalability**: Pre-configured Terraform structures for AWS (EKS, RDS, S3) and GCP (GKE, Cloud SQL).
 
 ---
 
-## 🛠️ Makefile Commands
+## ⚡ Quick Start (Local Development)
+
+### 1. Prerequisites
+- **Docker** and **Docker Compose** installed
+- **Node.js** v20+ & **Python** 3.11+
+- **Make** installed for executing scripts
+
+### 2. Getting Started
+Start by cloning the repository and setting up your environment variables:
 
 ```bash
-make setup       # Install all dependencies
-make dev         # Start local dev environment
-make test        # Run all tests
-make build       # Build Docker images
-make tf-init     # Terraform init (both clouds)
-make tf-plan     # Terraform plan
-make tf-apply    # Terraform apply
-make clean       # Tear down local containers
+git clone https://github.com/dgb28/studysmart.ai.git
+cd studysmart.ai
+
+# Setup Environment Configuration
+cp .env.example .env
 ```
+*(Please make sure to populate the `.env` file with the relevant database URLs and ElevenLabs API keys for full functionality)*
+
+### 3. Running via Docker
+
+The entire platform is heavily containerized. Simply spin up the stack via:
+
+```bash
+docker compose up --build
+```
+
+The application will launch on `http://localhost:3000`, with the backend API accessible at `http://localhost:8000`.
+
+---
+
+## 🗂️ Project Repository Structure
+
+```text
+studysmart.ai/
+├── backend/          # FastAPI REST API, SQL Models, & AI integration
+├── frontend/         # Next.js UI, Recharts analytics, API hooks
+├── agents/           # AI agent pipelines — RAG, chains, LLM tools
+├── infra/            # Terraform configurations for AWS & GCP K8s
+├── scripts/          # Convenience shell scripts for DB seeding/deploying
+└── docs/             # Extensive documentation & architecture decisions
+```
+
+---
+
+## 📖 Additional Documentation
+
+Find deeper insights regarding the architecture and cloud setup in the following locations:
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - System architecture diagrams
+- [`docs/COLLABORATION.md`](docs/COLLABORATION.md) - Guidelines for working with AI Agents
+- [`infra/`](infra/) - The Multi-Cloud configurations mapping out AWS/GCP Service Meshes
+
+---
+
+*Built specifically for the hackathon by the **StudySmart** Team!*
