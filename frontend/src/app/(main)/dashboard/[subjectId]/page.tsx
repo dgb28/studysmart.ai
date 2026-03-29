@@ -74,34 +74,57 @@ export default function SubjectPage() {
           <p className="italic text-slate-500 dark:text-zinc-500">No modules yet.</p>
         ) : (
           <div className="grid gap-4">
-            {subject.modules.map((module: any, index: number) => (
-              <motion.div
-                key={module.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 * index }}
-                whileHover={{ scale: 1.01 }}
-                className="glass-panel flex flex-col gap-4 rounded-[2rem] p-6 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <div className="mb-1 flex flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-700 dark:text-cyan-300">
-                      Module {index + 1}
-                    </span>
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{module.title}</h3>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">{module.description}</p>
-                  <p className="mt-2 text-xs text-slate-500 dark:text-zinc-500">{module.topics?.length || 0} topics</p>
-                </div>
-                <Link
-                  href={`/dashboard/${subject.id}/${module.id}`}
-                  className="btn-glow inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:shadow-cyan-500/40"
+            {subject.modules.map((module: any, index: number) => {
+              return (
+                <motion.div
+                  key={module.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.08 * index,
+                    duration: 0.45,
+                    ease: [0.25, 0.1, 0.25, 1],
+                  }}
+                  whileHover={{
+                    scale: 1.012,
+                    y: -2,
+                    transition: {
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 22,
+                      mass: 0.55,
+                    },
+                  }}
+                  className="rounded-[2rem] border border-black/[0.06] bg-black/[0.02] shadow-sm dark:border-white/10 dark:bg-white/[0.03] dark:shadow-none"
                 >
-                  <PlayCircle className="h-5 w-5" />
-                  <span className="hidden sm:inline">Open</span>
-                </Link>
-              </motion.div>
-            ))}
+                  <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-3">
+                        <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-xs font-bold text-cyan-700 dark:text-cyan-300">
+                          Module {index + 1}
+                        </span>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{module.title}</h3>
+                      </div>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-zinc-400">{module.description}</p>
+                    </div>
+                    <Link
+                      href={`/dashboard/${subject.id}/${module.id}`}
+                      onClick={() => {
+                        try {
+                          sessionStorage.setItem("sp_start_focus_on_arrive", "1");
+                        } catch {
+                          /* ignore */
+                        }
+                      }}
+                      className="btn-glow inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:shadow-cyan-500/40"
+                    >
+                      <PlayCircle className="h-5 w-5" />
+                      <span className="hidden sm:inline">Open</span>
+                    </Link>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>

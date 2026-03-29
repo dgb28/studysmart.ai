@@ -61,7 +61,7 @@ async def list_goals(
         today = datetime.now(timezone.utc).date()
         q = q.where(
             (DailyGoal.target_date >= today)
-            | (DailyGoal.completed == False)
+            | (DailyGoal.completed.is_(False))
         )
     q = q.order_by(DailyGoal.target_date, DailyGoal.created_at)
     res = await db.execute(q)

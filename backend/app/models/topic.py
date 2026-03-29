@@ -17,3 +17,4 @@ class Topic(BaseModel):
     quiz = relationship("TopicQuiz", back_populates="topic", uselist=False, cascade="all, delete-orphan")
     quiz_attempts = relationship("QuizAttempt", back_populates="topic", cascade="all, delete-orphan")
     user_states = relationship("UserTopicState", back_populates="topic", cascade="all, delete-orphan")
+    timer_segments = relationship("TimerSegment", back_populates="topic")

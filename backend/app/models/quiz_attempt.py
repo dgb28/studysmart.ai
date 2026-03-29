@@ -15,7 +15,7 @@ class QuizAttempt(BaseModel):
         ForeignKey("topic_quizzes.id", ondelete="CASCADE"),
         nullable=False,
     )
-    answers = Column(JSONB, nullable=False)  # list of selected indices
+    answers = Column(JSONB, nullable=False)  # list of MCQ indices (int) and/or written answers (str)
     score_percent = Column(Integer, nullable=False)
     passed = Column(Boolean, nullable=False, default=False)
 

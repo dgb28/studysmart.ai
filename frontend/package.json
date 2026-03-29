@@ -20,6 +20,7 @@
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
+    "highlight.js": "^11.11.1",
     "livekit-client": "^2.5.11",
     "lucide-react": "^0.462.0",
     "next": "14.2.16",
@@ -27,7 +28,10 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "^7.53.2",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.8.1",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.5.4",
     "zod": "^3.23.8",
     "zustand": "^5.0.1"

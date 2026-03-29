@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
@@ -11,6 +10,7 @@ class TopicBase(BaseModel):
 class TopicRead(TopicBase):
     id: uuid.UUID
     module_id: uuid.UUID
+    quiz_passed: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 class ModuleBase(BaseModel):

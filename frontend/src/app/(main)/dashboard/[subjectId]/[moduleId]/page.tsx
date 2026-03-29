@@ -6,11 +6,38 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import VoiceCoach from "@/components/VoiceCoach";
+import LessonContent from "@/components/LessonContent";
 import { getToken, api, isUnauthorized } from "@/lib/api";
 
-type Topic = { id: string; title: string; content: string | null; order: number };
-type QuizQ = { index: number; question: string; options: string[] };
+type Topic = {
+  id: string;
+  title: string;
+  content: string | null;
+  order: number;
+};
+type QuizQ = {
+  index: number;
+  kind?: "mcq" | "descriptive";
+  question: string;
+  options: string[];
+};
 type Board = { rank: number; display_name: string; score: number }[];
+
+function isMcq(q: QuizQ) {
+  return q.kind !== "descriptive";
+}
+
+function initialAnswersFor(quiz: QuizQ[]): (number | string)[] {
+  return quiz.map((q) => (isMcq(q) ? -1 : ""));
+}
+
+function quizIsComplete(quiz: QuizQ[], answers: (number | string)[]) {
+  return quiz.every((q, i) => {
+    const a = answers[i];
+    if (isMcq(q)) return typeof a === "number" && a >= 0;
+    return typeof a === "string" && a.trim().length > 0;
+  });
+}
 
 export default function StudyPage() {
   const params = useParams();
@@ -30,16 +57,63 @@ export default function StudyPage() {
   const [phase, setPhase] = useState<"content" | "quiz" | "locked">("content");
   const [loadingContent, setLoadingContent] = useState(false);
   const [quizQs, setQuizQs] = useState<QuizQ[]>([]);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<(number | string)[]>([]);
   const [result, setResult] = useState<{
     passed: boolean;
     score_percent: number;
-    wrong_explanations: { index: number; your_answer: string; correct_answer: string; explanation: string }[];
+    wrong_explanations: {
+      index: number;
+      your_answer: string;
+      correct_answer: string;
+      explanation: string;
+    }[];
+    descriptive_feedback: {
+      index: number;
+      your_answer: string;
+      ideal_answer: string;
+      comparison: string;
+      tips: string;
+      score_percent: number;
+    }[];
   } | null>(null);
   const [board, setBoard] = useState<Board>([]);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   const topic = topics[idx];
+
+  useEffect(() => {
+    if (!topic?.id) return;
+    try {
+      sessionStorage.setItem("sp_focus_topic_id", topic.id);
+    } catch {
+      /* ignore */
+    }
+  }, [topic?.id]);
+
+  /** Start Focus + interaction tracking when user opened module from Paths (Open button). */
+  useEffect(() => {
+    if (!getToken() || !topic?.id || topics.length === 0) return;
+    let shouldStart = false;
+    try {
+      shouldStart = sessionStorage.getItem("sp_start_focus_on_arrive") === "1";
+    } catch {
+      return;
+    }
+    if (!shouldStart) return;
+    try {
+      sessionStorage.removeItem("sp_start_focus_on_arrive");
+    } catch {
+      /* ignore */
+    }
+    void api<{ running: boolean }>("/timer/action", {
+      method: "POST",
+      json: { action: "start", topic_id: topic.id },
+    })
+      .then(() => {
+        window.dispatchEvent(new CustomEvent("sp-focus-timer-sync"));
+      })
+      .catch(console.error);
+  }, [topic?.id, topics.length]);
 
   const loadBoard = useCallback(() => {
     if (!getToken()) return;
@@ -51,7 +125,11 @@ export default function StudyPage() {
   const refreshTopicState = useCallback(async () => {
     if (!topic?.id) return;
     try {
-      const s = await api<{ unlocked: boolean; has_content: boolean; quiz_passed: boolean }>(`/topic/${topic.id}/state`);
+      const s = await api<{
+        unlocked: boolean;
+        has_content: boolean;
+        quiz_passed: boolean;
+      }>(`/topic/${topic.id}/state`);
       setUnlocked(s.unlocked);
       setHasContent(s.has_content);
       setQuizPassed(s.quiz_passed);
@@ -76,7 +154,9 @@ export default function StudyPage() {
       setSubject(data);
       const mod = data.modules?.find((m: any) => m.id === moduleId);
       setModule(mod);
-      const ts = (mod?.topics || []).slice().sort((a: Topic, b: Topic) => a.order - b.order);
+      const ts = (mod?.topics || [])
+        .slice()
+        .sort((a: Topic, b: Topic) => a.order - b.order);
       setTopics(ts);
       if (mod) {
         const sessionRes = await api<{ id: string }>("/sessions/start", {
@@ -105,7 +185,9 @@ export default function StudyPage() {
       await api(`/topic/${topic.id}/generate-content`, { method: "POST" });
       const data = await api<any>(`/subjects/${subjectId}`);
       const mod = data.modules?.find((m: any) => m.id === moduleId);
-      const ts = (mod?.topics || []).slice().sort((a: Topic, b: Topic) => a.order - b.order);
+      const ts = (mod?.topics || [])
+        .slice()
+        .sort((a: Topic, b: Topic) => a.order - b.order);
       setTopics(ts);
       await refreshTopicState();
     } catch (e) {
@@ -123,7 +205,7 @@ export default function StudyPage() {
     try {
       const q = await api<{ questions: QuizQ[] }>(`/topic/${topic.id}/quiz`);
       setQuizQs(q.questions);
-      setAnswers(q.questions.map(() => -1));
+      setAnswers(initialAnswersFor(q.questions));
     } catch (e) {
       console.error(e);
       alert("Quiz load failed");
@@ -132,17 +214,37 @@ export default function StudyPage() {
 
   async function submitQuiz() {
     if (!topic) return;
-    const unanswered = answers.findIndex((a) => a < 0);
-    if (unanswered !== -1) {
-      alert(`Please answer question ${unanswered + 1} before submitting.`);
+    const incomplete = quizQs.findIndex((q, i) => {
+      const a = answers[i];
+      if (isMcq(q)) return typeof a !== "number" || a < 0;
+      return typeof a !== "string" || !a.trim();
+    });
+    if (incomplete !== -1) {
+      alert(`Please answer question ${incomplete + 1} before submitting.`);
       return;
     }
     try {
       const res = await api<{
         passed: boolean;
         score_percent: number;
-        wrong_explanations: { index: number; your_answer: string; correct_answer: string; explanation: string }[];
-      }>(`/topic/${topic.id}/quiz/submit`, { method: "POST", json: { answers } });
+        wrong_explanations: {
+          index: number;
+          your_answer: string;
+          correct_answer: string;
+          explanation: string;
+        }[];
+        descriptive_feedback: {
+          index: number;
+          your_answer: string;
+          ideal_answer: string;
+          comparison: string;
+          tips: string;
+          score_percent: number;
+        }[];
+      }>(`/topic/${topic.id}/quiz/submit`, {
+        method: "POST",
+        json: { answers },
+      });
       setResult(res);
       if (res.passed) {
         setQuizPassed(true);
@@ -198,10 +300,14 @@ export default function StudyPage() {
               className="flex items-center justify-between gap-2 rounded-full border border-black/[0.06] bg-black/[0.02] px-3 py-2 dark:border-white/5 dark:bg-white/[0.03]"
             >
               <span className="truncate text-slate-700 dark:text-zinc-300">
-                <span className="mr-1.5 font-mono text-cyan-400/90">{r.rank}.</span>
+                <span className="mr-1.5 font-mono text-cyan-400/90">
+                  {r.rank}.
+                </span>
                 {r.display_name}
               </span>
-              <span className="shrink-0 font-medium text-slate-500 dark:text-zinc-500">{r.score}</span>
+              <span className="shrink-0 font-medium text-slate-500 dark:text-zinc-500">
+                {r.score}
+              </span>
             </motion.li>
           ))}
         </ul>
@@ -256,12 +362,15 @@ export default function StudyPage() {
             </p>
           ) : (
             <>
-              <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">{topic.title}</h1>
+              <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-white">
+                {topic.title}
+              </h1>
 
               {!hasContent && (
                 <div className="mb-6">
                   <p className="mb-3 text-sm text-slate-600 dark:text-zinc-400">
-                    No lesson text yet. Generate from AI (uses your study material context).
+                    No lesson text yet. Generate from AI (uses your study
+                    material context).
                   </p>
                   <button
                     type="button"
@@ -269,7 +378,9 @@ export default function StudyPage() {
                     onClick={ensureAiContent}
                     className="btn-glow inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 disabled:opacity-50"
                   >
-                    {loadingContent && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {loadingContent && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
                     Generate lesson
                   </button>
                 </div>
@@ -277,7 +388,9 @@ export default function StudyPage() {
 
               {quizPassed ? (
                 <div className="space-y-4">
-                  <p className="font-medium text-emerald-400">Quiz passed for this topic.</p>
+                  <p className="font-medium text-emerald-400">
+                    Quiz passed for this topic.
+                  </p>
                   <button
                     type="button"
                     onClick={nextTopic}
@@ -288,7 +401,12 @@ export default function StudyPage() {
                 </div>
               ) : phase === "quiz" && quizQs.length > 0 && !result ? (
                 <div className="space-y-6">
-                  <p className="text-sm text-slate-600 dark:text-zinc-400">10 questions · need 70% to continue.</p>
+                  <p className="text-sm text-slate-600 dark:text-zinc-400">
+                    {quizQs.filter(isMcq).length} multiple choice
+                    {quizQs.some((q) => !isMcq(q)) &&
+                      ` · ${quizQs.filter((q) => !isMcq(q)).length} written`}{" "}
+                    · need 70% to continue.
+                  </p>
                   {quizQs.map((q, qi) => (
                     <div
                       key={q.index}
@@ -296,38 +414,59 @@ export default function StudyPage() {
                     >
                       <p className="mb-3 font-medium text-slate-800 dark:text-zinc-100">
                         {qi + 1}. {q.question}
+                        {!isMcq(q) && (
+                          <span className="ml-2 text-xs font-normal text-slate-500 dark:text-zinc-500">
+                            (written)
+                          </span>
+                        )}
                       </p>
-                      <div className="space-y-2">
-                        {q.options.map((opt, oi) => (
-                          <label
-                            key={oi}
-                            className={`flex cursor-pointer items-center gap-3 rounded-full border px-4 py-2.5 text-sm transition ${
-                              answers[qi] === oi
-                                ? "border-cyan-500/50 bg-cyan-500/10 text-slate-900 dark:text-white"
-                                : "border-black/10 hover:border-black/20 hover:bg-black/[0.03] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/5"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`q-${qi}`}
-                              className="accent-cyan-400"
-                              checked={answers[qi] === oi}
-                              onChange={() => {
-                                const next = [...answers];
-                                next[qi] = oi;
-                                setAnswers(next);
-                              }}
-                            />
-                            {opt}
-                          </label>
-                        ))}
-                      </div>
+                      {isMcq(q) ? (
+                        <div className="space-y-2">
+                          {q.options.map((opt, oi) => (
+                            <label
+                              key={oi}
+                              className={`flex cursor-pointer items-center gap-3 rounded-full border px-4 py-2.5 text-sm transition ${
+                                answers[qi] === oi
+                                  ? "border-cyan-500/50 bg-cyan-500/10 text-slate-900 dark:text-white"
+                                  : "border-black/10 hover:border-black/20 hover:bg-black/[0.03] dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/5"
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={`q-${qi}`}
+                                className="accent-cyan-400"
+                                checked={answers[qi] === oi}
+                                onChange={() => {
+                                  const next = [...answers];
+                                  next[qi] = oi;
+                                  setAnswers(next);
+                                }}
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <textarea
+                          value={
+                            typeof answers[qi] === "string" ? answers[qi] : ""
+                          }
+                          onChange={(e) => {
+                            const next = [...answers];
+                            next[qi] = e.target.value;
+                            setAnswers(next);
+                          }}
+                          rows={4}
+                          placeholder="Type your answer…"
+                          className="w-full resize-y rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-cyan-500/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-white/10 dark:bg-black/40 dark:text-zinc-100 dark:placeholder:text-zinc-600"
+                        />
+                      )}
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={submitQuiz}
-                    disabled={answers.some((a) => a < 0)}
+                    disabled={!quizIsComplete(quizQs, answers)}
                     className="btn-glow rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Submit
@@ -337,23 +476,71 @@ export default function StudyPage() {
                 <div className="space-y-4">
                   <p
                     className={
-                      result.passed ? "text-lg font-bold text-emerald-400" : "text-lg font-bold text-red-400"
+                      result.passed
+                        ? "text-lg font-bold text-emerald-400"
+                        : "text-lg font-bold text-red-400"
                     }
                   >
-                    Score {result.score_percent}% — {result.passed ? "Passed" : "Failed — retake required"}
+                    Score {result.score_percent}% —{" "}
+                    {result.passed ? "Passed" : "Failed — retake required"}
                   </p>
-                  {result.wrong_explanations.length > 0 && (
+                  {(result.wrong_explanations.length > 0 ||
+                    (result.descriptive_feedback?.length ?? 0) > 0) && (
                     <div className="space-y-3 text-sm">
-                      <p className="text-slate-600 dark:text-zinc-400">Review:</p>
+                      <p className="text-slate-600 dark:text-zinc-400">
+                        Review:
+                      </p>
                       {result.wrong_explanations.map((w) => (
                         <div
-                          key={w.index}
+                          key={`mcq-${w.index}`}
                           className="rounded-2xl border border-[var(--border)] bg-slate-100/80 p-4 dark:border-white/10 dark:bg-black/30"
                         >
-                          <p className="text-red-600 dark:text-red-300">Q{w.index + 1}</p>
-                          <p className="text-slate-700 dark:text-zinc-300">Your answer: {w.your_answer}</p>
-                          <p className="text-slate-700 dark:text-zinc-300">Correct: {w.correct_answer}</p>
-                          <p className="mt-1 text-slate-600 dark:text-zinc-500">{w.explanation}</p>
+                          <p className="text-red-600 dark:text-red-300">
+                            Multiple choice · Q{w.index + 1}
+                          </p>
+                          <p className="text-slate-700 dark:text-zinc-300">
+                            Your answer: {w.your_answer}
+                          </p>
+                          <p className="text-slate-700 dark:text-zinc-300">
+                            Correct: {w.correct_answer}
+                          </p>
+                          <p className="mt-1 text-slate-600 dark:text-zinc-500">
+                            {w.explanation}
+                          </p>
+                        </div>
+                      ))}
+                      {(result.descriptive_feedback ?? []).map((d) => (
+                        <div
+                          key={`desc-${d.index}`}
+                          className="rounded-2xl border border-[var(--border)] bg-slate-100/80 p-4 dark:border-white/10 dark:bg-black/30"
+                        >
+                          <p className="font-medium text-cyan-700 dark:text-cyan-300">
+                            Written · Q{d.index + 1} · score {d.score_percent}%
+                          </p>
+                          <p className="mt-2 text-slate-700 dark:text-zinc-300">
+                            <span className="text-base font-semibold text-slate-700 dark:text-zinc-200">
+                              Your answer:{" "}
+                            </span>
+                            {d.your_answer}
+                          </p>
+                          <p className="mt-2 text-slate-700 dark:text-zinc-300">
+                            <span className="text-base font-semibold text-slate-700 dark:text-zinc-200">
+                              Ideal answer:{" "}
+                            </span>
+                            {d.ideal_answer}
+                          </p>
+                          <p className="mt-2 text-slate-600 dark:text-zinc-400">
+                            <span className="text-base font-semibold text-slate-800 dark:text-zinc-100">
+                              How it compares:{" "}
+                            </span>
+                            {d.comparison}
+                          </p>
+                          <p className="mt-2 text-slate-600 dark:text-zinc-400">
+                            <span className="text-base font-semibold text-slate-800 dark:text-zinc-100">
+                              How to write a strong answer:{" "}
+                            </span>
+                            {d.tips}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -371,7 +558,7 @@ export default function StudyPage() {
                       type="button"
                       onClick={() => {
                         setResult(null);
-                        setAnswers(quizQs.map(() => -1));
+                        setAnswers(initialAnswersFor(quizQs));
                       }}
                       className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-amber-500/20"
                     >
@@ -381,15 +568,16 @@ export default function StudyPage() {
                 </div>
               ) : hasContent ? (
                 <>
-                  <div className="prose prose-slate dark:prose-invert mb-8 max-w-none whitespace-pre-wrap text-slate-700 dark:text-zinc-300">
-                    {topic.content}
+                  <div className="mb-8">
+                    <LessonContent content={topic.content || ""} />
                   </div>
                   <button
                     type="button"
                     onClick={markRead}
                     className="btn-glow inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-cyan-500/25"
                   >
-                    I&apos;ve read this — take quiz <CheckCircle2 className="h-5 w-5" />
+                    I&apos;ve read this — take quiz{" "}
+                    <CheckCircle2 className="h-5 w-5" />
                   </button>
                 </>
               ) : null}

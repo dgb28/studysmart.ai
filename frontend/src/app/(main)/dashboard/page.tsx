@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Sparkles, Wand2 } from "lucide-react";
+import { Sparkles, Wand2, FolderGit2 } from "lucide-react";
 import SubjectCard from "@/components/SubjectCard";
 import { getToken, api, isUnauthorized } from "@/lib/api";
 
@@ -17,7 +17,11 @@ const stagger = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 28 } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 380, damping: 28 },
+  },
 };
 
 export default function DashboardPage() {
@@ -37,7 +41,10 @@ export default function DashboardPage() {
       .then(setSubjects)
       .catch((e) => {
         if (isUnauthorized(e)) router.replace("/login");
-        else setListErr("Could not load learning paths. API error or network — you are still logged in.");
+        else
+          setListErr(
+            "Could not load learning paths. API error or network — you are still logged in.",
+          );
       });
   }, [router]);
 
@@ -46,7 +53,10 @@ export default function DashboardPage() {
     if (!pathName.trim() || busy) return;
     setBusy(true);
     try {
-      await api("/learning/paths/generate", { method: "POST", json: { topic_name: pathName.trim() } });
+      await api("/learning/paths/generate", {
+        method: "POST",
+        json: { topic_name: pathName.trim() },
+      });
       setPathName("");
       const list = await api<any[]>("/subjects/");
       setSubjects(list);
@@ -59,25 +69,31 @@ export default function DashboardPage() {
   }
 
   return (
-    <motion.div className="space-y-10" variants={stagger} initial="hidden" animate="show">
+    <motion.div
+      className="space-y-12"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
       <motion.div variants={fadeUp}>
-        <div className="mb-2 flex items-center gap-2 text-cyan-600 dark:text-cyan-400/90">
+        <div className="mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
           <Sparkles className="h-5 w-5" />
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">Orbit</span>
+          <span className="text-sm font-semibold uppercase tracking-wider">
+            Dashboard
+          </span>
         </div>
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          <span className="gradient-text">Learning</span>{" "}
-          <span className="text-slate-900 dark:text-white">paths</span>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl text-[var(--foreground)]">
+          Learning Paths
         </h1>
-        <p className="mt-3 max-w-xl text-slate-600 dark:text-zinc-500">
-          Catalog + AI paths · pick up anytime — progress stays saved.
+        <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">
+          AI-generated paths · pick up anytime — progress stays saved.
         </p>
       </motion.div>
 
       {listErr && (
         <motion.div
           variants={fadeUp}
-          className="rounded-[1.5rem] border border-amber-400/30 bg-amber-50/90 p-5 text-sm text-amber-900 glass-panel dark:border-amber-500/25 dark:bg-transparent dark:text-amber-200/90"
+          className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm font-medium text-red-600 shadow-sm dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
         >
           {listErr}
         </motion.div>
@@ -86,44 +102,54 @@ export default function DashboardPage() {
       <motion.form
         variants={fadeUp}
         onSubmit={generatePath}
-        className="glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center"
+        className="glass-panel p-6 md:p-8 flex flex-col md:flex-row gap-4 items-stretch md:items-center"
       >
-        <input
-          className="input-orbit flex-1 min-w-0"
-          placeholder="New topic — e.g. DBMS, Kubernetes, Linear Algebra…"
-          value={pathName}
-          onChange={(e) => setPathName(e.target.value)}
-        />
+        <div className="flex-1 relative">
+          <input
+            className="input-orbit w-full h-14"
+            placeholder="New topic — e.g. Kubernetes, Linear Algebra..."
+            value={pathName}
+            onChange={(e) => setPathName(e.target.value)}
+          />
+        </div>
         <motion.button
           type="submit"
           disabled={busy}
-          whileHover={{ scale: busy ? 1 : 1.03 }}
-          whileTap={{ scale: busy ? 1 : 0.97 }}
-          className="rounded-full bg-gradient-to-r from-emerald-500/80 to-cyan-500/70 text-white font-semibold px-8 py-3.5 flex items-center justify-center gap-2 shadow-[0_0_28px_rgba(52,211,153,0.25)] disabled:opacity-40"
+          whileHover={{ scale: busy ? 1 : 1.02 }}
+          whileTap={{ scale: busy ? 1 : 0.98 }}
+          className="btn-glow h-14 shrink-0 px-8"
         >
-          <Wand2 className="w-4 h-4" />
-          Generate path
+          <Wand2 className="w-4 h-4 mr-2" />
+          Generate Path
         </motion.button>
       </motion.form>
 
       {subjects.length === 0 ? (
-        <motion.div variants={fadeUp}         className="glass-panel rounded-[2rem] border border-dashed border-slate-300 p-12 text-center dark:border-white/10">
-          <p className="mb-2 text-slate-600 dark:text-zinc-500">No paths yet.</p>
-          <p className="text-sm text-slate-500 dark:text-zinc-600">
-            Generate above or run the seed script for SQL &amp; DSA.
+        <motion.div
+          variants={fadeUp}
+          className="glass-panel border-dashed p-16 text-center shadow-none"
+        >
+          <div className="mx-auto w-16 h-16 mb-4 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400">
+            <FolderGit2 className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="mb-2 text-xl font-bold text-[var(--foreground)]">
+            No paths yet
+          </p>
+          <p className="text-[var(--muted)]">
+            Use the form above to create your first learning path.
           </p>
         </motion.div>
       ) : (
         <motion.div
           variants={fadeUp}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {subjects.map((subject: any, i: number) => (
             <motion.div
               key={subject.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06, type: "spring", stiffness: 300, damping: 24 }}
+              transition={{ delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
             >
               <SubjectCard subject={subject} />
             </motion.div>

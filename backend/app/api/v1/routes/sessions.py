@@ -25,7 +25,7 @@ async def start_session(
     active_result = await db.execute(
         select(StudySession).where(
             StudySession.user_id == user.id,
-            StudySession.is_active == True,
+            StudySession.is_active.is_(True),
         )
     )
     active_session = active_result.scalars().first()

@@ -63,6 +63,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: backend/coverage.xml
+          fail_ci_if_error: false
 
   # ── Agents Tests ─────────────────────────────────────────────────────────────
   agents-test:

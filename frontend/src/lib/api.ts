@@ -60,3 +60,24 @@ export async function api<T>(
 export function isUnauthorized(err: unknown): boolean {
   return err instanceof ApiError && err.status === 401;
 }
+
+/** Human-readable message from FastAPI `{ "detail": ... }` or network failures. */
+export function formatApiError(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    if (err.status === 0) return err.message;
+    try {
+      const j = JSON.parse(err.body) as {
+        detail?: string | Array<{ msg?: string; loc?: unknown[] }>;
+      };
+      if (typeof j.detail === "string") return j.detail;
+      if (Array.isArray(j.detail)) {
+        const first = j.detail[0];
+        if (first?.msg) return first.msg;
+      }
+    } catch {
+      if (err.body?.trim()) return err.body.slice(0, 200);
+    }
+    return fallback;
+  }
+  return fallback;
+}

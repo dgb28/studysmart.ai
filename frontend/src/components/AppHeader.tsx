@@ -1,188 +1,120 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import ThemeToggle from "./ThemeToggle";
+import { FolderGit2, LogOut, Flame, Target, Infinity as InfinityIcon } from "lucide-react";
+import { setToken } from "@/lib/api";
 import { motion } from "framer-motion";
-import { BrainCircuit, Flame, Trophy, Play, Pause } from "lucide-react";
-import { JetBrains_Mono } from "next/font/google";
-import { api, getToken, setToken } from "@/lib/api";
-import ThemeToggle from "@/components/ThemeToggle";
-
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "600"] });
-
-const navItem = {
-  rest: { scale: 1 },
-  hover: { scale: 1.05 },
-  tap: { scale: 0.98 },
-};
 
 export default function AppHeader() {
-  const [running, setRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [startedAt, setStartedAt] = useState<string | null>(null);
-  const [rank, setRank] = useState<{ rank: number; total_users: number; streak: number } | null>(null);
-
-  const syncTimer = useCallback(async () => {
-    if (!getToken()) return;
-    try {
-      const s = await api<{ running: boolean; started_at: string | null }>("/timer/state");
-      setRunning(s.running);
-      setStartedAt(s.started_at);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const syncRank = useCallback(async () => {
-    if (!getToken()) return;
-    try {
-      const r = await api<{ rank: number; total_users: number; streak: number }>("/leaderboard/me");
-      setRank(r);
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    syncTimer();
-    syncRank();
-    const i = setInterval(() => {
-      syncTimer();
-      syncRank();
-    }, 30000);
-    return () => clearInterval(i);
-  }, [syncTimer, syncRank]);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  useEffect(() => {
-    if (!running || !startedAt) {
-      setElapsed(0);
-      return;
-    }
-    const start = new Date(startedAt).getTime();
-    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [running, startedAt]);
-
-  async function toggleTimer() {
-    try {
-      const action = running ? "pause" : "start";
-      const s = await api<{ running: boolean; started_at: string | null }>("/timer/action", {
-        method: "POST",
-        json: { action },
-      });
-      setRunning(s.running);
-      setStartedAt(s.started_at);
-      if (action === "pause") syncRank();
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
-  const ss = String(elapsed % 60).padStart(2, "0");
+  const navLinks = [
+    { label: "Paths", href: "/dashboard" },
+    { label: "Goals", href: "/dashboard/goals" },
+    { label: "Analysis", href: "/dashboard/analytics" },
+    { label: "Rooms", href: "/rooms" },
+    { label: "Home", href: "/home" },
+  ];
 
   return (
-    <motion.header
-      initial={{ y: -16, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 380, damping: 28 }}
-      className="sticky top-0 z-50 mx-3 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-full border border-[var(--border)] glass-panel px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-shadow dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] md:mx-6 md:mt-4 md:gap-4 md:px-6"
+    <header
+      className={`fixed left-0 right-0 z-50 mx-auto w-[95%] max-w-5xl rounded-full border transition-all duration-300 ${
+        scrolled 
+          ? "top-4 bg-[var(--card)]/80 backdrop-blur-md border-[var(--border)] shadow-lg shadow-black/5 dark:shadow-black/20" 
+          : "top-6 bg-transparent border-transparent shadow-none"
+      }`}
     >
-      <Link href="/home" className="flex items-center gap-2.5 shrink-0 group">
-        <motion.div
-          whileHover={{ rotate: [0, -8, 8, 0] }}
-          transition={{ duration: 0.5 }}
-          className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500/25 to-violet-600/25 ring-1 ring-[var(--border)] dark:from-cyan-500/30 dark:to-violet-600/30 dark:ring-white/10"
-        >
-          <BrainCircuit className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          <span className="absolute inset-0 rounded-full bg-cyan-400/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        </motion.div>
-        <span className="text-lg font-bold tracking-tight">
-          <span className="gradient-text">Study</span>
-          <span className="text-slate-900 dark:text-white">Pulse</span>
-        </span>
-      </Link>
-
-      <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
-        <motion.button
-          type="button"
-          onClick={toggleTimer}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.96 }}
-          className={`flex items-center gap-2 rounded-full py-2 pl-3 pr-4 text-sm font-medium transition-shadow ${
-            running
-              ? "bg-gradient-to-r from-emerald-500/25 to-cyan-500/20 shadow-[0_0_24px_rgba(52,211,153,0.2)] ring-2 ring-emerald-400/50 dark:shadow-[0_0_24px_rgba(52,211,153,0.25)]"
-              : "glass-pill hover:bg-[var(--card-hover)]"
-          }`}
-        >
-          <span
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
-              running ? "bg-emerald-500 text-white" : "bg-slate-200 text-cyan-700 dark:bg-white/10 dark:text-cyan-300"
-            }`}
-          >
-            {running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 pl-0.5" />}
-          </span>
-          <span className={`${mono.className} tabular-nums text-slate-800 dark:text-zinc-100`}>
-            {running || elapsed ? `${mm}:${ss}` : "Focus"}
-          </span>
-        </motion.button>
-
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+      <div className="flex h-14 items-center justify-between px-4 sm:px-6">
+        
+        {/* Left Side: Logo */}
+        <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/goals"
-            className="flex items-center gap-2 rounded-full glass-pill px-3 py-2 text-sm text-amber-700 transition-shadow hover:text-amber-600 hover:shadow-[0_0_20px_rgba(251,191,36,0.15)] dark:text-amber-300 dark:hover:text-amber-200 dark:hover:shadow-[0_0_20px_rgba(251,191,36,0.2)]"
-            title="Streak"
+            href="/home"
+            className="group flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <Flame className="w-4 h-4" />
-            <span className="font-semibold tabular-nums">{rank?.streak ?? "—"}</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <FolderGit2 className="h-4 w-4" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-[var(--foreground)] hidden sm:block">
+              StudyPulse
+            </span>
           </Link>
-        </motion.div>
+        </div>
 
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-          <Link
-            href="/dashboard/leaderboard"
-            className="flex items-center gap-1.5 rounded-full glass-pill px-3 py-2 text-sm text-yellow-700 transition-shadow hover:text-yellow-600 hover:shadow-[0_0_20px_rgba(250,204,21,0.12)] dark:text-yellow-300 dark:hover:text-yellow-200 dark:hover:shadow-[0_0_20px_rgba(250,204,21,0.15)]"
-            title="Leaderboard"
-          >
-            <Trophy className="w-4 h-4" />
-            <span className="font-semibold">#{rank?.rank ?? "—"}</span>
-          </Link>
-        </motion.div>
-      </div>
+        {/* Center: Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                {link.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="header-active-tab"
+                    className="absolute -bottom-[22px] left-0 right-0 h-0.5 bg-emerald-500 rounded-t-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-      <nav className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
-        {[
-          { href: "/dashboard", label: "Paths" },
-          { href: "/dashboard/goals", label: "Goals" },
-          { href: "/dashboard/analytics", label: "Analysis" },
-          { href: "/rooms", label: "Rooms" },
-          { href: "/home", label: "Home" },
-        ].map((item) => (
-          <motion.div key={item.href} variants={navItem} initial="rest" whileHover="hover" whileTap="tap">
+        {/* Right Side: Tools & Profile */}
+        <div className="flex items-center gap-4">
+          
+          <div className="hidden sm:flex items-center gap-3 pr-4 border-r border-[var(--border)]">
             <Link
-              href={item.href}
-              className="rounded-full px-3 py-1.5 text-sm text-slate-600 transition-colors hover:bg-black/[0.04] hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-white"
+              href="/dashboard/goals"
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
             >
-              {item.label}
+              <Flame className="h-4 w-4" />
+              <span>3</span>
             </Link>
-          </motion.div>
-        ))}
-        <ThemeToggle />
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => {
-            setToken(null);
-            window.location.href = "/login";
-          }}
-          className="ml-1 rounded-full border border-[var(--border)] px-3 py-1.5 text-xs text-slate-500 transition-colors hover:border-red-400/40 hover:text-red-600 dark:text-zinc-500 dark:hover:border-red-500/30 dark:hover:text-red-300"
-        >
-          Log out
-        </motion.button>
-      </nav>
-    </motion.header>
+            
+            <Link
+              href="/dashboard/leaderboard"
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 transition-colors"
+            >
+              <Target className="h-4 w-4" />
+              <span>#12</span>
+            </Link>
+          </div>
+
+          <ThemeToggle />
+
+          <button
+            onClick={() => {
+              setToken("");
+              window.location.href = "/login";
+            }}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            title="Log out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </header>
   );
 }

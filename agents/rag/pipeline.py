@@ -10,9 +10,7 @@ Usage:
 """
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, StorageContext
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.core.settings import Settings
 import chromadb
-import os
 
 
 class RAGPipeline:

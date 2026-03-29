@@ -21,3 +21,12 @@ async def ensure_postgres_schema(conn: AsyncConnection) -> None:
             """
         )
     )
+    for stmt in (
+        "ALTER TABLE timer_segments ADD COLUMN IF NOT EXISTS mouse_movements INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE timer_segments ADD COLUMN IF NOT EXISTS keyboard_inputs INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE timer_segments ADD COLUMN IF NOT EXISTS tab_changes INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE timer_segments ADD COLUMN IF NOT EXISTS window_blurs INTEGER NOT NULL DEFAULT 0",
+        """ALTER TABLE timer_segments ADD COLUMN IF NOT EXISTS topic_id UUID REFERENCES topics(id) ON DELETE SET NULL""",
+        "CREATE INDEX IF NOT EXISTS ix_timer_segments_topic_id ON timer_segments (topic_id)",
+    ):
+        await conn.execute(text(stmt))

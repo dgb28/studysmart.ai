@@ -66,7 +66,7 @@ async def _user_metrics(db: AsyncSession, user_id: uuid.UUID, since: datetime):
         select(DailyGoal).where(
             DailyGoal.user_id == user_id,
             DailyGoal.target_date >= since.date(),
-            DailyGoal.completed == True,
+            DailyGoal.completed.is_(True),
         )
     )
     goals_done = len(goals.scalars().all())
@@ -80,7 +80,7 @@ async def _user_metrics(db: AsyncSession, user_id: uuid.UUID, since: datetime):
     q = await db.execute(
         select(func.count(QuizAttempt.id)).where(
             QuizAttempt.user_id == user_id,
-            QuizAttempt.passed == True,
+            QuizAttempt.passed.is_(True),
             QuizAttempt.created_at >= since,
         )
     )
@@ -95,13 +95,12 @@ async def leaderboard(
     _: User = Depends(get_current_user),
 ):
     since = datetime.now(timezone.utc) - WEEK
-    users_res = await db.execute(select(User).where(User.is_active == True))
+    users_res = await db.execute(select(User).where(User.is_active.is_(True)))
     users = users_res.scalars().all()
     rows: list[tuple[User, float, int, int, int, int]] = []
     for u in users:
         sm, st, gd, gt, qp = await _user_metrics(db, u.id, since)
         sc = _score(sm, st, gd, gt, qp)
-        name = u.full_name or u.email.split("@")[0]
         rows.append((u, sc, sm, st, gd, qp))
     rows.sort(key=lambda x: -x[1])
     out: list[LeaderboardEntry] = []
@@ -124,7 +123,7 @@ async def leaderboard(
 @router.get("/me", response_model=MyRankResponse)
 async def my_rank(db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
     since = datetime.now(timezone.utc) - WEEK
-    users_res = await db.execute(select(User).where(User.is_active == True))
+    users_res = await db.execute(select(User).where(User.is_active.is_(True)))
     users = users_res.scalars().all()
     scored: list[tuple[uuid.UUID, float]] = []
     for u in users:

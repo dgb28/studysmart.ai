@@ -1,5 +1,5 @@
 """Compute current learning streak from daily_activities."""
-from datetime import date, timedelta, datetime, timezone
+from datetime import timedelta, datetime, timezone
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession

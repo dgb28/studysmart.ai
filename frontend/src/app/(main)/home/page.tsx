@@ -50,13 +50,25 @@ export default function HomePage() {
     if (!text.trim() || busy) return;
     setBusy(true);
     try {
-      const res = await api<{ target: string; learning_topic: string | null }>("/learning/home/classify", {
+      const res = await api<{
+        target: string;
+        learning_topic: string | null;
+        goal?: { id: string; title: string; target_date: string; completed: boolean } | null;
+      }>("/learning/home/classify", {
         method: "POST",
         json: { text: text.trim() },
       });
-      if (res.target === "daily_goals") router.push("/dashboard/goals");
-      else if (res.target === "analysis") router.push("/dashboard/analytics");
-      else {
+      if (res.target === "daily_goals") {
+        if (res.goal) {
+          sessionStorage.setItem(
+            "goals_flash",
+            `Added “${res.goal.title}” for ${res.goal.target_date}`
+          );
+        }
+        router.push("/dashboard/goals");
+      } else if (res.target === "analysis") {
+        router.push("/dashboard/analytics");
+      } else {
         if (res.learning_topic && res.learning_topic.length > 1) {
           await api("/learning/paths/generate", {
             method: "POST",
@@ -73,9 +85,17 @@ export default function HomePage() {
   }
 
   function startVoice() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
+    type Rec = {
+      lang: string;
+      onresult: ((ev: { results: ArrayLike<{ 0: { transcript: string } }> }) => void) | null;
+      start: () => void;
+    };
+    type RecCtor = new () => Rec;
+    const w = window as Window & {
+      webkitSpeechRecognition?: RecCtor;
+      SpeechRecognition?: RecCtor;
+    };
+    const SR = w.webkitSpeechRecognition ?? w.SpeechRecognition;
     if (!SR) {
       alert("Speech recognition not supported in this browser");
       return;
@@ -92,11 +112,7 @@ export default function HomePage() {
   if (!me && !loadErr)
     return (
       <div className="flex min-h-[50vh] flex-1 items-center justify-center py-24">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-          className="h-10 w-10 rounded-full border-2 border-indigo-400/40 border-t-indigo-600 dark:border-cyan-400/30 dark:border-t-cyan-400"
-        />
+        <div className="h-10 w-10 animate-pulse rounded-full bg-indigo-400/25 dark:bg-cyan-400/20" aria-hidden />
       </div>
     );
   if (loadErr)
@@ -113,119 +129,80 @@ export default function HomePage() {
     : "What are you planning to study today?";
 
   return (
-    <div
-      className="-mx-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-4 overflow-hidden py-1 sm:-mx-6 md:-mx-8"
-      style={{ backgroundColor: "var(--home-hero-bg)" }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 280, damping: 28 }}
-        className="flex w-full max-w-3xl flex-col justify-center px-4 sm:px-6"
-      >
-        <div
-          className="mx-auto w-full rounded-[1.5rem] border p-6 shadow-[var(--home-card-shadow)] sm:p-8 md:rounded-[1.75rem]"
-          style={{
-            backgroundColor: "var(--home-card-bg)",
-            borderColor: "var(--home-card-border)",
-          }}
-        >
-          <div className="mb-5 flex justify-center sm:mb-6">
-            <div
-              className="flex h-11 w-11 items-center justify-center rounded-xl sm:h-12 sm:w-12"
-              style={{ backgroundColor: "var(--home-mic-bg)" }}
-            >
-              <Sparkles
-                className="h-6 w-6 text-indigo-600 dark:text-[#a78bfa]"
-                strokeWidth={1.75}
-              />
+    <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col items-center justify-center p-4">
+      <div className="flex w-full max-w-3xl flex-col justify-center">
+        <div className="mx-auto w-full glass-panel p-8 sm:p-12 text-center">
+          
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <Sparkles className="h-8 w-8" strokeWidth={1.5} />
             </div>
           </div>
 
-          <p
-            className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-[11px]"
-            style={{ color: "var(--home-eyebrow)" }}
-          >
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">
             {eyebrow}
           </p>
-          <h1
-            className="text-center text-2xl font-bold tracking-tight sm:text-3xl"
-            style={{ color: "var(--home-title)" }}
-          >
-            Hi, {name}
+          
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-[var(--foreground)]">
+            Hi, <span className="text-emerald-600 dark:text-emerald-400">{name}</span>
           </h1>
-          <p
-            className="mx-auto mt-2 max-w-xl text-center text-sm text-balance sm:mt-3 sm:text-base"
-            style={{ color: "var(--home-muted)" }}
-          >
+          
+          <p className="mx-auto mt-4 max-w-xl text-lg text-[var(--muted)] sm:text-xl font-medium">
             {question}
           </p>
 
           <form
             onSubmit={handleSubmit}
-            className="mx-auto mt-6 flex w-full flex-col gap-3 sm:mt-8 lg:flex-row lg:items-stretch"
+            className="mx-auto mt-10 flex w-full max-w-2xl flex-col gap-4 sm:flex-row sm:items-stretch"
           >
-            <div
-              className="flex min-h-[3rem] flex-1 items-center gap-2 rounded-xl border bg-transparent px-2 py-1.5 shadow-sm dark:bg-white/5 sm:min-h-[3.25rem] sm:gap-3 sm:rounded-2xl sm:px-3 sm:py-2"
-              style={{ borderColor: "var(--home-input-border)" }}
-            >
+            <div className="flex flex-1 items-center gap-3 rounded-2xl bg-[var(--input-bg)] border border-[var(--input-border)] px-4 py-2 shadow-sm focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100 dark:focus-within:ring-emerald-500/20 transition-all">
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={startVoice}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-indigo-600 sm:h-10 sm:w-10 sm:rounded-xl dark:text-violet-200"
-                style={{ backgroundColor: "var(--home-mic-bg)" }}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 transition-colors"
                 aria-label="Voice input"
               >
                 <Mic className="h-5 w-5" />
               </motion.button>
               <input
-                className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none sm:py-2 sm:text-base"
-                style={{ color: "var(--foreground)" }}
-                placeholder="Goals, analytics, or “I want to learn DBMS”…"
+                className="min-w-0 flex-1 bg-transparent py-3 text-base sm:text-lg outline-none text-[var(--foreground)] placeholder-[var(--muted)]"
+                placeholder="What do you want to learn?"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
               />
             </div>
+            
             <motion.button
               type="submit"
               disabled={busy}
               whileHover={{ scale: busy ? 1 : 1.02 }}
               whileTap={{ scale: busy ? 1 : 0.98 }}
-              className="btn-glow inline-flex min-h-[3rem] shrink-0 items-center justify-center gap-2 rounded-xl px-8 text-sm font-semibold disabled:opacity-40 sm:min-h-[3.25rem] sm:rounded-2xl sm:px-10 sm:text-base"
+              className="btn-glow inline-flex shrink-0 h-14 sm:h-auto items-center justify-center gap-2 px-8 text-base font-semibold disabled:opacity-50"
             >
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-              Go
+              Start
+              <ArrowRight className="h-5 w-5" />
             </motion.button>
           </form>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15 }}
-        className="flex shrink-0 flex-wrap justify-center gap-2 px-4 sm:gap-3"
-      >
+      <div className="mt-12 flex flex-wrap justify-center gap-4">
         {[
-          { href: "/dashboard", label: "Learning paths" },
-          { href: "/dashboard/goals", label: "Daily goals" },
-          { href: "/dashboard/analytics", label: "Analysis" },
-        ].map((l) => (
+          { href: "/dashboard", label: "Learning Paths" },
+          { href: "/dashboard/goals", label: "Goals" },
+          { href: "/dashboard/analytics", label: "Analytics" },
+        ].map((link) => (
           <Link
-            key={l.href}
-            href={l.href}
-            className="rounded-full px-5 py-2.5 text-sm font-medium transition hover:opacity-90"
-            style={{
-              backgroundColor: "var(--home-link-bg)",
-              color: "var(--home-link-text)",
-            }}
+            key={link.href}
+            href={link.href}
+            className="glass-pill px-6 py-2.5 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-hover)] transition-colors"
           >
-            {l.label}
+            {link.label}
           </Link>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

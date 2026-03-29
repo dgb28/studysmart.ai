@@ -1,4 +1,5 @@
 # ARCHITECTURE.md
+
 > System architecture reference for StudyPulse: AI Accountability + Cognitive Learning System.
 
 ---
@@ -51,19 +52,21 @@
 ---
 
 ## Service Port Map (Local Dev)
-| Service | Port | URL |
-|---|---|---|
-| Frontend (Next.js) | 3000 | http://localhost:3000 |
-| Backend API | 8000 | http://localhost:8000 |
+
+| Service            | Port | URL                        |
+| ------------------ | ---- | -------------------------- |
+| Frontend (Next.js) | 3000 | http://localhost:3000      |
+| Backend API        | 8000 | http://localhost:8000      |
 | API Docs (Swagger) | 8000 | http://localhost:8000/docs |
-| PostgreSQL | 5432 | — |
-| Redis | 6379 | — |
-| ChromaDB | 8100 | http://localhost:8100 |
-| RedisInsight | 8002 | http://localhost:8002 |
+| PostgreSQL         | 5432 | —                          |
+| Redis              | 6379 | —                          |
+| ChromaDB           | 8100 | http://localhost:8100      |
+| RedisInsight       | 8002 | http://localhost:8002      |
 
 ---
 
 ## Data Flow: Real-Time Friction Detection
+
 ```
 Learning Dashboard (Client)
      │ 1. Collects mouse movement, typing speed, time-on-page
@@ -94,6 +97,7 @@ Floating PiP Video Overlay activates automatically.
 ```
 
 ## Data Flow: Proof of Learning (Micro-Challenge)
+
 ```
 User completes 3 topics
      │ 1. Triggers Micro-Challenge Modal
@@ -114,14 +118,14 @@ User receives structured feedback (text/audio prompt)
 
 ## Multi-Cloud Design
 
-| Concern | AWS | GCP |
-|---|---|---|
-| Compute (K8s) | EKS | GKE |
-| Database | RDS PostgreSQL | Cloud SQL PostgreSQL |
-| Object Store | S3 (for audio logs) | GCS |
-| Serverless | Lambda | Cloud Run |
-| Secrets | Secrets Manager | Secret Manager |
-| Load Balancing | ALB | GKE Ingress |
-| Cross-cloud | AWS VPN | GCP HA VPN |
+| Concern        | AWS                 | GCP                  |
+| -------------- | ------------------- | -------------------- |
+| Compute (K8s)  | EKS                 | GKE                  |
+| Database       | RDS PostgreSQL      | Cloud SQL PostgreSQL |
+| Object Store   | S3 (for audio logs) | GCS                  |
+| Serverless     | Lambda              | Cloud Run            |
+| Secrets        | Secrets Manager     | Secret Manager       |
+| Load Balancing | ALB                 | GKE Ingress          |
+| Cross-cloud    | AWS VPN             | GCP HA VPN           |
 
 Cross-cloud traffic flows through an IPSec VPN tunnel (AWS VPN Connection ↔ GCP HA VPN Gateway).
