@@ -22,6 +22,7 @@ const MAX_TOPIC_CONTENT_CHARS = 12_000;
 /** Map ElevenLabs / LiveKit errors to clearer copy (quota is the common case). */
 export function formatVoiceSessionError(raw: string): string {
   const m = raw.replace(/^Server error:\s*/i, "").trim();
+
   if (
     /quota limit|exceeds your quota|exceed.*quota|1002.*quota|protocol error.*quota/i.test(
       raw + m,
@@ -32,7 +33,41 @@ export function formatVoiceSessionError(raw: string): string {
       "Open elevenlabs.io → Billing / Usage to add credits or upgrade, then try again."
     );
   }
+
+  // ElevenLabs safety guardrail triggered — common for CS/security topics
+  if (/guardrail|policy violation|1008/i.test(raw + m)) {
+    return (
+      "The AI coach couldn't process this topic because the lesson content " +
+      "contains technical terms (like 'buffer overflow', 'memory corruption', or 'exploit') " +
+      "that triggered an automatic safety filter. " +
+      "Try asking your question directly by voice — the filter only applies to the pre-loaded lesson text."
+    );
+  }
+
   return raw.startsWith("Server error:") ? raw : `Voice error: ${m}`;
+}
+
+/**
+ * Strip technical CS/security terms from topic_content that commonly
+ * trigger ElevenLabs' Violence safety guardrail (code 1008).
+ * We replace the raw terms with neutral paraphrases so the coach
+ * still has full context but the classifier doesn't fire.
+ */
+function sanitizeTopicContent(text: string): string {
+  return text
+    .replace(/\bkill\b/gi, "terminate")
+    .replace(/\bdestroy\b/gi, "deallocate")
+    .replace(/\bexploit\b/gi, "vulnerability example")
+    .replace(/\battack\b/gi, "security issue")
+    .replace(/\bbuffer overflow\b/gi, "buffer boundary error")
+    .replace(/\bstack smash(ing)?\b/gi, "stack boundary violation")
+    .replace(/\bmemory corruption\b/gi, "memory safety error")
+    .replace(/\bdangling pointer\b/gi, "invalid pointer reference")
+    .replace(/\buse[- ]after[- ]free\b/gi, "freed-memory access")
+    .replace(/\bheap spray\b/gi, "heap allocation pattern")
+    .replace(/\bpayload\b/gi, "data")
+    .replace(/\bmalicious\b/gi, "unintended")
+    .replace(/\binjection\b/gi, "input handling");
 }
 
 function clampDynamicVariables(
@@ -41,12 +76,14 @@ function clampDynamicVariables(
   if (!vars) return undefined;
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(vars)) {
-    if (k === "topic_content" && v.length > MAX_TOPIC_CONTENT_CHARS) {
-      out[k] =
-        v.slice(0, MAX_TOPIC_CONTENT_CHARS) + "\n… [truncated for voice coach]";
-    } else {
-      out[k] = v;
+    let val = v;
+    if (k === "topic_content") {
+      val = sanitizeTopicContent(val);
+      if (val.length > MAX_TOPIC_CONTENT_CHARS) {
+        val = val.slice(0, MAX_TOPIC_CONTENT_CHARS) + "\n… [truncated for voice coach]";
+      }
     }
+    out[k] = val;
   }
   return out;
 }

@@ -23,6 +23,7 @@ export default function VoiceCoach({
 }: VoiceCoachProps) {
   const [agentId, setAgentId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,7 +46,8 @@ export default function VoiceCoach({
         onActiveChange?.(false);
       },
       onError: (err) => {
-        alert(err);
+        setVoiceError(err);
+        setIsExpanded(true);
         onActiveChange?.(false);
       },
     });
@@ -85,7 +87,18 @@ export default function VoiceCoach({
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
           >
-            {messages.length === 0 ? (
+            {voiceError ? (
+              <div className="m-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-4">
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Session ended</p>
+                <p className="text-xs text-amber-600 dark:text-amber-300 leading-relaxed">{voiceError}</p>
+                <button
+                  onClick={() => setVoiceError(null)}
+                  className="mt-3 text-xs font-medium text-amber-700 dark:text-amber-400 underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
                 <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
                   <MessageSquare className="w-8 h-8 text-blue-400 opacity-50" />

@@ -106,7 +106,10 @@ export default function AnalyticsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [activeDays, setActiveDays] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const d = new Date();
+    return formatIso(d.getFullYear(), d.getMonth(), d.getDate());
+  });
   const [dayData, setDayData] = useState<DayRow[]>([]);
 
   useEffect(() => {
@@ -177,17 +180,17 @@ export default function AnalyticsPage() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-10 w-10 rounded-full border-2 border-cyan-400/30 border-t-cyan-400"
+          className="h-10 w-10 rounded-full border-2 border-indigo-400/30 border-t-indigo-400"
         />
       </div>
     );
 
   const iw = data.interaction_week_avg;
   const metricData = [
-    { name: "Focus Time", value: iw.focus_minutes, fill: "#22d3ee" },
-    { name: "Tabs", value: iw.tab_switches, fill: "#34d399" },
-    { name: "Keys", value: iw.keyboard_inputs, fill: "#a78bfa" },
-    { name: "Blurs", value: iw.window_blurs, fill: "#fbbf24" },
+    { name: "Focus Time", value: iw.focus_minutes, fill: "#818cf8" },
+    { name: "Tabs", value: iw.tab_switches, fill: "#38bdf8" },
+    { name: "Keys", value: iw.keyboard_inputs, fill: "#c084fc" },
+    { name: "Blurs", value: iw.window_blurs, fill: "#f472b6" },
   ];
 
   const year = currentMonth.getFullYear();
@@ -200,22 +203,21 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-10">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mb-2 flex items-center gap-2 text-cyan-400/90">
+        <div className="mb-2 flex items-center gap-2 text-emerald-600">
           <Activity className="h-5 w-5" />
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">Signal</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Analysis</span>
         </div>
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          <span className="gradient-text">Learning</span>{" "}
-          <span className="text-slate-900 dark:text-white">analysis</span>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl text-[var(--foreground)]">
+          Learning analysis
         </h1>
-        <p className="mt-2 max-w-xl text-slate-600 dark:text-zinc-500">
+        <p className="mt-2 max-w-xl text-[var(--muted)]">
           Timer, goals, daily breakdowns, and topic progress — distilled.
         </p>
         <motion.p
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.12 }}
-          className="mt-6 rounded-[1.5rem] border border-cyan-500/25 bg-gradient-to-br from-cyan-500/10 to-transparent p-5 text-sm text-slate-800 glass-panel dark:border-cyan-500/20 dark:from-cyan-500/5 dark:text-cyan-100/90"
+          className="mt-6 rounded-[1.5rem] p-5 text-sm glass-panel text-[var(--muted)]"
         >
           {data.recommendation}
         </motion.p>
@@ -229,24 +231,24 @@ export default function AnalyticsPage() {
       >
         <div className="w-full shrink-0 lg:w-80">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-white">
-              <CalendarIcon className="h-5 w-5 text-cyan-400" /> Calendar
+            <h3 className="flex items-center gap-2 text-xl font-semibold text-[var(--foreground)]">
+              <CalendarIcon className="h-5 w-5 text-emerald-500" /> Calendar
             </h3>
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
-                className="rounded-full p-1.5 text-zinc-400 transition hover:bg-white/10"
+                className="rounded-full p-1.5 text-[var(--muted)] transition hover:bg-[var(--card-hover)]"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <div className="w-28 text-center text-sm font-medium text-slate-800 dark:text-slate-300">
+              <div className="w-28 text-center text-sm font-medium text-[var(--foreground)]">
                 {currentMonth.toLocaleString("default", { month: "short" })} {year}
               </div>
               <button
                 type="button"
                 onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
-                className="rounded-full p-1.5 text-zinc-400 transition hover:bg-white/10"
+                className="rounded-full p-1.5 text-[var(--muted)] transition hover:bg-[var(--card-hover)]"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -257,7 +259,7 @@ export default function AnalyticsPage() {
             {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
               <div
                 key={d}
-                className="text-[11px] font-semibold uppercase tracking-wider text-zinc-600"
+                className="text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]"
               >
                 {d}
               </div>
@@ -270,20 +272,25 @@ export default function AnalyticsPage() {
               const cellDate = new Date(year, month, d);
               const today = new Date();
               today.setHours(0, 0, 0, 0);
-              if (cellDate > today) return <div key={d} className="aspect-square" />;
+              
               const hasAct = activeDays.includes(iso);
               const isSel = selectedDate === iso;
+              const isToday = cellDate.getTime() === today.getTime();
+              
               let cls =
                 "aspect-square rounded-full flex items-center justify-center font-medium transition-all text-sm cursor-pointer ";
               if (isSel)
                 cls +=
-                  "bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/25";
+                  "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25";
               else if (hasAct)
                 cls +=
-                  "border border-cyan-600/25 bg-cyan-50 text-cyan-800 hover:scale-110 dark:border-cyan-500/20 dark:bg-white/5 dark:text-cyan-300";
+                  "bg-emerald-50 text-emerald-700 hover:scale-110 dark:bg-emerald-500/10 dark:text-emerald-400";
+              else if (isToday)
+                cls +=
+                  "text-emerald-600 font-bold border-2 border-emerald-500/30";
               else
                 cls +=
-                  "text-slate-500 hover:bg-slate-100 dark:text-zinc-500 dark:hover:bg-white/5";
+                  "text-[var(--muted)] hover:bg-[var(--card-hover)]";
               return (
                 <button key={d} type="button" onClick={() => setSelectedDate(iso)} className={cls}>
                   {d}
@@ -291,8 +298,8 @@ export default function AnalyticsPage() {
               );
             })}
           </div>
-          <p className="mt-4 text-center text-xs italic text-zinc-500">
-            Future dates are hidden. Select a past date to see per-topic focus sessions (with topic linked).
+          <p className="mt-4 text-center text-xs text-[var(--muted)]">
+            Select a date to see per-topic focus sessions.
           </p>
         </div>
 

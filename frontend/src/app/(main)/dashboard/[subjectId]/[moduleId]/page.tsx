@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import VoiceCoach from "@/components/VoiceCoach";
+import LessonContent from "@/components/LessonContent";
 import { getToken, api, isUnauthorized } from "@/lib/api";
 
 type Topic = {
@@ -567,8 +568,8 @@ export default function StudyPage() {
                 </div>
               ) : hasContent ? (
                 <>
-                  <div className="prose prose-slate dark:prose-invert mb-8 max-w-none whitespace-pre-wrap text-slate-700 dark:text-zinc-300">
-                    {topic.content}
+                  <div className="mb-8">
+                    <LessonContent content={topic.content || ""} />
                   </div>
                   <button
                     type="button"
