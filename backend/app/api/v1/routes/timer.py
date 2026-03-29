@@ -1,9 +1,9 @@
-"""Global focus timer: start / pause segments."""
+"""Global focus timer: start / pause segments; interaction metrics from client while Focus is on."""
 from datetime import datetime, timezone
 import uuid
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -17,7 +17,12 @@ router = APIRouter()
 
 
 class TimerActionBody(BaseModel):
-    action: str  # "start" | "pause"
+    action: str = Field(..., description='"start" | "pause"')
+    topic_id: uuid.UUID | None = None
+    tab_changes: int = 0
+    keyboard_inputs: int = 0
+    window_blurs: int = 0
+    mouse_movements: int = 0
 
 
 class TimerStateResponse(BaseModel):
@@ -58,7 +63,13 @@ async def timer_action(
     if body.action == "start":
         if open_seg:
             return TimerStateResponse(running=True, open_segment_id=open_seg.id, started_at=open_seg.started_at)
-        seg = TimerSegment(user_id=user.id, started_at=now, ended_at=None, duration_seconds=0)
+        seg = TimerSegment(
+            user_id=user.id,
+            started_at=now,
+            ended_at=None,
+            duration_seconds=0,
+            topic_id=body.topic_id,
+        )
         db.add(seg)
         await db.flush()
         return TimerStateResponse(running=True, open_segment_id=seg.id, started_at=seg.started_at)
@@ -68,11 +79,13 @@ async def timer_action(
             return TimerStateResponse(running=False)
         open_seg.ended_at = now
         open_seg.duration_seconds = max(0, int((open_seg.ended_at - open_seg.started_at).total_seconds()))
+        open_seg.tab_changes = max(0, body.tab_changes)
+        open_seg.keyboard_inputs = max(0, body.keyboard_inputs)
+        open_seg.window_blurs = max(0, body.window_blurs)
+        open_seg.mouse_movements = max(0, body.mouse_movements)
         if open_seg.duration_seconds >= 60:
             await record_activity_day(db, user.id)
         await db.flush()
         return TimerStateResponse(running=False)
-
-    from fastapi import HTTPException
 
     raise HTTPException(400, "action must be start or pause")

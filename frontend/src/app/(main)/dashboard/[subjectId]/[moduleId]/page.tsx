@@ -80,6 +80,40 @@ export default function StudyPage() {
 
   const topic = topics[idx];
 
+  useEffect(() => {
+    if (!topic?.id) return;
+    try {
+      sessionStorage.setItem("sp_focus_topic_id", topic.id);
+    } catch {
+      /* ignore */
+    }
+  }, [topic?.id]);
+
+  /** Start Focus + interaction tracking when user opened module from Paths (Open button). */
+  useEffect(() => {
+    if (!getToken() || !topic?.id || topics.length === 0) return;
+    let shouldStart = false;
+    try {
+      shouldStart = sessionStorage.getItem("sp_start_focus_on_arrive") === "1";
+    } catch {
+      return;
+    }
+    if (!shouldStart) return;
+    try {
+      sessionStorage.removeItem("sp_start_focus_on_arrive");
+    } catch {
+      /* ignore */
+    }
+    void api<{ running: boolean }>("/timer/action", {
+      method: "POST",
+      json: { action: "start", topic_id: topic.id },
+    })
+      .then(() => {
+        window.dispatchEvent(new CustomEvent("sp-focus-timer-sync"));
+      })
+      .catch(console.error);
+  }, [topic?.id, topics.length]);
+
   const loadBoard = useCallback(() => {
     if (!getToken()) return;
     api<Board>("/leaderboard/board")

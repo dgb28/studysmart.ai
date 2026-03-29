@@ -7,6 +7,7 @@ import { BrainCircuit, Flame, Trophy, Play, Pause } from "lucide-react";
 import { JetBrains_Mono } from "next/font/google";
 import { api, getToken, setToken } from "@/lib/api";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useFocusInteractionTracker } from "@/hooks/useFocusInteractionTracker";
 
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "600"] });
 
@@ -25,6 +26,9 @@ export default function AppHeader() {
     total_users: number;
     streak: number;
   } | null>(null);
+
+  const { reset: resetInteraction, getSnapshot: getInteractionSnapshot } =
+    useFocusInteractionTracker(running);
 
   const syncTimer = useCallback(async () => {
     if (!getToken()) return;
@@ -60,7 +64,14 @@ export default function AppHeader() {
       syncTimer();
       syncRank();
     }, 30000);
-    return () => clearInterval(i);
+    const onSync = () => {
+      void syncTimer();
+    };
+    window.addEventListener("sp-focus-timer-sync", onSync);
+    return () => {
+      clearInterval(i);
+      window.removeEventListener("sp-focus-timer-sync", onSync);
+    };
   }, [syncTimer, syncRank]);
 
   useEffect(() => {
@@ -75,19 +86,77 @@ export default function AppHeader() {
     return () => clearInterval(id);
   }, [running, startedAt]);
 
-  async function toggleTimer() {
+  const pauseFocus = useCallback(async () => {
+    if (!running) return;
     try {
-      const action = running ? "pause" : "start";
+      const snap = getInteractionSnapshot();
       const s = await api<{ running: boolean; started_at: string | null }>(
         "/timer/action",
         {
           method: "POST",
-          json: { action },
+          json: {
+            action: "pause",
+            tab_changes: snap.tab_changes,
+            keyboard_inputs: snap.keyboard_inputs,
+            window_blurs: snap.window_blurs,
+            mouse_movements: snap.mouse_movements,
+          },
+        },
+      );
+      resetInteraction();
+      setRunning(s.running);
+      setStartedAt(s.started_at);
+      syncRank();
+      window.dispatchEvent(new CustomEvent("sp-focus-timer-sync"));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [running, getInteractionSnapshot, resetInteraction, syncRank]);
+
+  useEffect(() => {
+    const onPauseForAnalytics = () => {
+      void pauseFocus();
+    };
+    window.addEventListener("sp-pause-focus-for-analytics", onPauseForAnalytics);
+    return () => {
+      window.removeEventListener("sp-pause-focus-for-analytics", onPauseForAnalytics);
+    };
+  }, [pauseFocus]);
+
+  async function toggleTimer() {
+    try {
+      if (running) {
+        await pauseFocus();
+        return;
+      }
+
+      resetInteraction();
+      let topic_id: string | undefined;
+      try {
+        const t = sessionStorage.getItem("sp_focus_topic_id");
+        if (
+          t &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            t,
+          )
+        ) {
+          topic_id = t;
+        }
+      } catch {
+        /* ignore */
+      }
+      const s = await api<{ running: boolean; started_at: string | null }>(
+        "/timer/action",
+        {
+          method: "POST",
+          json: {
+            action: "start",
+            ...(topic_id ? { topic_id } : {}),
+          },
         },
       );
       setRunning(s.running);
       setStartedAt(s.started_at);
-      if (action === "pause") syncRank();
     } catch (e) {
       console.error(e);
     }
