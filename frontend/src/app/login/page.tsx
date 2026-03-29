@@ -37,13 +37,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-6 transition-colors">
+    <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden overflow-y-auto p-6 py-10 transition-colors">
       <AnimatedBackdrop />
       <div className="absolute right-4 top-4 z-[50] md:right-8 md:top-8">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-md space-y-8 glass-panel p-10 md:p-12">
+      <div className="w-full max-w-md space-y-5 glass-panel p-8 md:p-9">
         <div className="text-center relative">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
             <GraduationCap className="h-8 w-8" strokeWidth={2} />
@@ -54,6 +54,32 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-[var(--muted)]">
             Sign in to your account
           </p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <button
+              type="submit"
+              form="login-form"
+              className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold"
+              style={{
+                backgroundColor: "#10b981",
+                color: "#ffffff",
+                border: "1px solid rgba(16,185,129,0.95)",
+              }}
+            >
+              Sign in
+            </button>
+            <Link
+              href="/signup"
+              className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-semibold"
+              style={{
+                backgroundColor: "rgba(16,185,129,0.16)",
+                color: "#ecfeff",
+                border: "1px solid rgba(16,185,129,0.45)",
+                textDecoration: "none",
+              }}
+            >
+              Create account
+            </Link>
+          </div>
         </div>
 
         {err && (
@@ -62,8 +88,8 @@ export default function LoginPage() {
           </p>
         )}
 
-        <form onSubmit={submit} className="space-y-6">
-          <div className="space-y-4">
+        <form id="login-form" onSubmit={submit} className="space-y-4 pb-1">
+          <div className="space-y-3">
             <div className="relative group">
               <Mail className="pointer-events-none absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <input
@@ -88,20 +114,35 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="btn-glow w-full h-12 flex items-center justify-center gap-2"
+            className="w-full h-12 flex items-center justify-center gap-2 rounded-xl font-semibold"
+            style={{
+              backgroundColor: "#10b981",
+              color: "#ffffff",
+              border: "1px solid rgba(16,185,129,0.95)",
+              boxShadow: "0 8px 22px rgba(16,185,129,0.35)",
+            }}
           >
             <LogIn className="w-4 h-4" />
             Sign in
           </button>
         </form>
 
-        <p className="text-center text-sm font-medium text-slate-500 dark:text-slate-400">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-emerald-600 dark:text-emerald-400 hover:underline transition-all ml-1">
-            Sign up
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm font-medium text-slate-100">
+          <span>Don&apos;t have an account?</span>
+          <Link
+            href="/signup"
+            className="ml-2 inline-flex items-center rounded-lg px-3 py-1.5 font-semibold"
+            style={{
+              backgroundColor: "rgba(16,185,129,0.18)",
+              color: "#ecfeff",
+              border: "1px solid rgba(16,185,129,0.45)",
+            }}
+          >
+            Create account
           </Link>
-        </p>
+        </div>
       </div>
+
     </div>
   );
 }
