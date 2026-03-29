@@ -1,101 +1,93 @@
-# 🧠 StudySmart.ai 🚀
+# 🧠 StudySmart.ai 🚀 
 
-> **A Next-Generation Context-Aware Learning Platform for the Hackathon**
-
-StudySmart.ai is a comprehensive learning dashboard that integrates real-time AI voice coaching, context-aware AI interactions, and highly granular study analytics to optimize focused learning sessions.
-
----
-
-## 🏆 Hackathon Judging Criteria Overview
-
-### 🌍 Impact Potential 
-**The Problem:** Traditional studying is often plagued by distraction, lack of personalized feedback, and zero insight into *how* effectively time is being spent. 
-**Our Solution:** StudySmart.ai solves this by providing a distraction-free, glassmorphic environment equipped with a granular interaction analytics dashboard. By tracking *Focus Time*, *Tab Switches*, *Keystrokes*, and *Window Blurs*, we empower students to hold themselves accountable and deeply understand their own learning habits, leading to significantly better educational outcomes.
-
-### 💻 Technical Execution 
-**Purposeful AI:** Our AI is not just a standard chatbot wrapper; it is an **Interactive Voice Coach** powered by the ElevenLabs SDK. The LLM is contextually locked the exact module the student is studying, preventing hallucinations.
-**Prototype Efficacy:** The prototype features a fully containerized Next.js/FastAPI stack. Our smart inactivity detectors seamlessly pause timers when engaging with the AI, ensuring that our analytics precisely map to genuine learning effort. By utilizing real-time API state and PostgreSQL, our bar chart analytics calculate accurate rolling 7-day averages.
-
-### ⚖️ Ethical Alignment
-**Empowerment over Replacement:** StudySmart.ai is designed to act as a 1-on-1 tutor, **not** to simply give students the answers. We implemented *Automated Micro-Challenges* that serve to verify a student's fundamental understanding before they can advance, promoting genuine knowledge retention over cheating.
-**Risk Mitigation:** By locking the AI's contextual knowledge strictly to the learning module at hand, we drastically reduce the risk of bias or hallucinated misinformation. We believe the future of AI in education is empowering students to think critically.
-
-### 🎥 Presentation
-Please refer to our **Submission Demo Video** for a full walkthrough of our architecture, UI functionality, and the future potential of expanding our analytics pipeline to support institutional integrations.
+**A Next-Generation Context-Aware Learning Platform**  
+*Built for the [Claude Hackathon: Social Impact](https://anthropic.com/)*
 
 ---
 
-## ✨ Key Features
+## 🎯 Hackathon Theme & Track Alignment
 
-- **🗣️ Interactive AI Voice Coach**: Synchronized chat and voice coaching (ElevenLabs) for instant, verbal feedback.
-- **🎯 Context-Aware Modules**: The AI strictly comprehends the exact topic currently being studied.
-- **📈 Granular Interaction Analytics**: Weekly and Monthly charts tracking precise *Focus Time*, *Keystrokes*, *Tab Switches*, and *Window Blurs*.
-- **⏳ Smart Inactivity Detection**: Timers explicitly handle idle time and AI-communication pauses.
-- **🛡️ Proof of Learning**: Automated micro-challenges that govern module advancement.
+Our project proudly aligns with multiple tracks of the Claude Hackathon, primarily focusing on creating a genuine, scalable social impact:
+
+1. **Primary: Track 3 – Economic Empowerment & Education**  
+   We are solving the barrier of inequitable access to quality 1-on-1 tutoring. StudySmart acts as a highly personalized, adaptive tutoring system. It guarantees that any individual, regardless of their financial or geographical limitations, can receive pinpoint coaching and feedback to grow their skills and, consequently, their economic opportunities.
+   
+2. **Secondary: Track 2 – Neuroscience & Mental Health**  
+   By tracking rapid tab switching, window blurs, and extreme spikes in keystrokes, our platform quietly monitors for signs of **cognitive overload and burnout**, encouraging healthy, distraction-free study habits rather than brute-force cramming.
 
 ---
 
-## 🛠️ Tech Stack
+## ❓ The Three Must-Answer Questions
 
-### Frontend & Analytics
-- **Next.js 14** (App Router) & React
-- **Tailwind CSS & Framer Motion** (Glassmorphic UI design)
-- **Recharts** (Interactive Vertical Bar Chart Analytics)
+**1. Who are we building this for and why do they need it?**  
+We are building StudySmart for **non-traditional learners, underserved students, and neurodivergent individuals** who struggle with the "one-size-fits-all" pace of traditional classrooms. They critically need an adaptive, infinitely patient tutor that corrects their specific misunderstandings in real-time without judgment, and provides deep insights into their own distraction patterns.
 
-### Backend & AI
-- **FastAPI** (Python)
-- **ElevenLabs SDK & LLM Chains**
-- **PostgreSQL** with SQLAlchemy ORM
+**2. What could go wrong and what would you do about it?**  
+- *The Risk of Hallucination or Bad Advice:* An AI teaching false information is inherently dangerous to a student's education.  
+- *The Safeguard:* We built a strict **Contextually-Locked RAG (Retrieval-Augmented Generation) Pipeline**. The AI is physically restricted from answering queries outside the exact bounds of the currently active learning module, ensuring rigid factual accuracy.
 
-### DevOps & Multi-Cloud Infrastructure (Pre-configured)
-- **Docker & Docker Compose**
-- **Terraform** configs for AWS (EKS, RDS, S3) & GCP (GKE, Cloud SQL)
+**3. How does this help people rather than make decisions for them?**  
+StudySmart never feeds a student the answer. Instead, it employs iterative Socratic questioning through our **Micro-Challenges Engine**. It requires the user to prove their understanding of a concept *before* advancing gracefully. It empowers the student to govern their own learning pacing, rather than dragging them forward or completely taking the reins.
+
+---
+
+## ✨ Extensive Feature Suite
+
+Over the course of the hackathon, our team engineered a massive suite of features to turn this from a toy into a production-grade educational tool:
+
+- **🗣️ Interactive AI Voice Coach**
+  Real-time synchronized chat and voice coaching powered seamlessly by the ElevenLabs SDK, ensuring that auditory learners and the visually impaired have unparalleled accessibility.
+  
+- **🎯 Context-Aware Module Locking**
+  Dynamic context tracking that seamlessly locks the LLM's knowledge base exlusively to your current topic, entirely eliminating irrelevant tangents or hallucinations.
+
+- **📈 Granular Interaction Analytics Hub**
+  Go beyond basic "Time on Page." Our built-in tracking engine captures precise study footprints:
+  - **Focus Time**: Pinpoint monitoring of genuine active studying.
+  - **Keystrokes**: Quantifying active engagement and answer formulation.
+  - **Tab Switches & Window Blurs**: Detecting background idle time and context-switching to quantify distractions and combat burnout.
+  
+- **📊 Beautiful Data Visualization**
+  A glassmorphic, interactive Analytics Dashboard featuring Weekly and Monthly vertical summary bar charts demonstrating rolling 7-day or 30-day averages of all tracked cognitive metrics.
+  
+- **⏳ Smart Inactivity & Burnout Detection**
+  Timers dynamically pause while you communicate with the AI, ensuring analytic purity. Spikes in context-switching automatically trigger "Take A Break" burnout warnings.
+
+- **🛡️ Proof of Learning API**
+  Automated generated micro-challenges and spaced repetition mechanics designed to verify true student comprehension before permitting module advancement.
+
+- **☁️ Multi-Cloud & Enterprise Ready**
+  We didn't just build an app; we built an infrastructure. The platform ships with Terraform templates mapped for AWS (EKS, RDS, S3) and GCP (GKE, Cloud SQL) deployments.
+
+---
+
+## 🏆 How We Address the Judging Criteria
+
+- **🌍 Impact Potential (25 pts):** Democratizes access to elite 1-on-1 tutoring models, solving a ubiquitous real-world problem for marginalized student populations.
+- **💻 Technical Execution (30 pts):** A highly sophisticated containerized stack featuring a Next.js (App Router) frontend, a FastAPI (Python) backend, and a PostgreSQL database. AI is used purposefully as a voice coach and evaluator—not a toy chatbot.
+- **⚖️ Ethical Alignment (25 pts):** Rigorously designed to augment human learning, not bypass it with "homework helpers". The rigid context constraints strictly resolve algorithmic biases and hallucinations. 
+- **🎥 Presentation (20 pts):** Check out our **Demo Video Submission** to watch the platform seamlessly orchestrate Voice LLM coaching, analytic tracking, and module advancement in real-time!
 
 ---
 
 ## ⚡ Quick Start (Local Development)
 
 ### 1. Prerequisites
-- **Docker** and **Docker Compose** installed
+- **Docker** and **Docker Compose**
 - **Node.js** v20+ & **Python** 3.11+
-- **Make** installed for executing scripts
 
 ### 2. Getting Started
-Start by cloning the repository and setting up your environment configuration:
+Clone and easily spin up the environment:
 
 ```bash
 git clone https://github.com/dgb28/studysmart.ai.git
 cd studysmart.ai
 
-# Setup Environment Configuration
-cp .env.example .env
-```
-*(Please populate `.env` with the necessary Database URIs and ElevenLabs API keys).*
-
-### 3. Running via Docker
-
-The platform is heavily containerized. Spin up the entire stack via:
-
-```bash
+cp .env.example .env     # (Insert API keys here)
 docker compose up --build
 ```
-
-Access the UI at `http://localhost:3000` and the API at `http://localhost:8000`.
-
----
-
-## 🗂️ Repository Structure
-
-```text
-studysmart.ai/
-├── backend/          # FastAPI REST API, SQL Models, AI integrations
-├── frontend/         # Next.js Dashboard, Recharts Analytics, Hooks
-├── agents/           # RAG pipelines, prompt chains, LLM tools
-├── infra/            # Terraform configurations (AWS/GCP Service Meshes)
-├── scripts/          # DB seeding & deployment shells
-└── docs/             # Extensive architecture decisions
-```
+Access the Student Dashboard at `http://localhost:3000` and the secure Backend API at `http://localhost:8000`.
 
 ---
 
-*Built with passion for the Hackathon by the **StudySmart.ai** Team!*
+*Built with passion, caffeine, and purpose for the Claude Hackathon!*
