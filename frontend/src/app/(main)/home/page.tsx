@@ -19,6 +19,34 @@ export default function HomePage() {
   const [busy, setBusy] = useState(false);
   const registerGreetingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [quote, setQuote] = useState<{ q: string; a: string } | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(true);
+
+  const fetchQuote = async () => {
+    setQuoteLoading(true);
+    try {
+      const res = await fetch("https://zenquotes.io/api/random");
+      if (!res.ok) throw new Error("API Failed");
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setQuote(data[0]);
+      } else {
+        throw new Error("Invalid format");
+      }
+    } catch (e) {
+      setQuote({
+        q: "Push yourself, because no one else is going to do it for you.",
+        a: "Unknown"
+      });
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuote();
+  }, []);
+
   useEffect(() => {
     if (!getToken()) {
       router.replace("/login");
@@ -231,6 +259,32 @@ export default function HomePage() {
             {l.label}
           </Link>
         ))}
+      </div>
+
+      {/* Motivational Quote Section */}
+      <div className="mt-10 max-w-xs mx-auto w-full flex flex-col pt-6 pb-2 border-t border-[#2D2D4A] border-b relative">
+        {quoteLoading ? (
+          <div className="w-full h-16 animate-pulse bg-gray-600/20 rounded-lg"></div>
+        ) : (
+          <div className="flex flex-col text-center">
+            <span className="text-purple-500 font-bold text-2xl absolute top-6 left-0 leading-none">"</span>
+            <p className="italic text-base text-gray-300 leading-relaxed px-4">
+              {quote?.q}
+            </p>
+            <span className="text-purple-500 font-bold text-2xl absolute bottom-14 right-0 leading-none">"</span>
+            
+            <p className="text-amber-400 text-xs font-semibold uppercase tracking-widest mt-4">
+              — {quote?.a}
+            </p>
+            
+            <button 
+              onClick={fetchQuote}
+              className="mt-4 mx-auto text-xs text-gray-600 hover:text-purple-400 transition-colors bg-transparent border-none cursor-pointer"
+            >
+              ↻ new quote
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
